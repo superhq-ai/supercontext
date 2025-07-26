@@ -1,0 +1,23 @@
+{
+	"name": "superhq",
+	"private": true,
+	"version": "0.0.1",
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"scripts": {
+		"dev": "concurrently --names \"WEB,API\" \"bun run dev:web\" \"bun run dev:api\"",
+		"dev:web": "bun --cwd apps/web dev",
+		"dev:api": "bun --cwd apps/api dev",
+		"typecheck": "bunx --bun tsc",
+		"lint": "biome lint .",
+		"lint:fix": "biome lint --write .",
+		"format": "biome format .",
+		"format:fix": "biome format --write ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.1.2",
+		"concurrently": "^9.2.0"
+	}
+}
