@@ -4,7 +4,9 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "bun --hot src/index.ts"
+		"dev": "bun --hot src/index.ts",
+		"build": "bun build src/index.ts --outdir=dist --target=node",
+		"start": "NODE_ENV=production bun dist/index.js"
 	},
 	"dependencies": {
 		"hono": "^4.8.5"
