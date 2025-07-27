@@ -9,6 +9,10 @@
 		"db:migrate": "bun src/migrate.ts",
 		"db:studio": "drizzle-kit studio"
 	},
+	"exports": {
+		".": "./src/index.ts",
+		"./schema": "./src/schema.ts"
+	},
 	"dependencies": {
 		"drizzle-orm": "^0.31.2",
 		"postgres": "^3.4.4",
