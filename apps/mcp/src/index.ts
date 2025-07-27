@@ -1,6 +1,6 @@
+import { createServer } from "node:http";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { createServer } from "http";
 import { z } from "zod";
 
 function getServer() {
@@ -15,7 +15,7 @@ function getServer() {
 			},
 		},
 	);
-	
+
 	server.tool(
 		"echo",
 		"Echoes back the input",
@@ -31,7 +31,7 @@ function getServer() {
 					},
 				],
 			};
-		}
+		},
 	);
 
 	return server;
@@ -72,37 +72,35 @@ const httpServer = createServer(async (request, response) => {
 	}
 
 	if (request.method === "POST") {
-    const server = getServer();
-    const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: undefined,
-      enableJsonResponse: true,
-    });
+		const server = getServer();
+		const transport = new StreamableHTTPServerTransport({
+			sessionIdGenerator: undefined,
+			enableJsonResponse: true,
+		});
 
-    // Add error handling for transport
-    transport.onerror = console.error.bind(console);
+		// Add error handling for transport
+		transport.onerror = console.error.bind(console);
 
-    response.on("close", () => {
-      console.log("Request closed");
-      transport.close();
-      server.close();
-    });
+		response.on("close", () => {
+			console.log("Request closed");
+			transport.close();
+			server.close();
+		});
 
-    await server.connect(transport);
-    
+		await server.connect(transport);
+
 		const chunks: Buffer[] = [];
+
 		for await (const chunk of request) {
 			chunks.push(chunk);
 		}
 
 		try {
-      const parsedBody = JSON.parse(Buffer.concat(chunks).toString());
-      
-			await transport.handleRequest(
-				request,
-				response,
-				parsedBody,
-			);
+			const parsedBody = JSON.parse(Buffer.concat(chunks).toString());
+
+			await transport.handleRequest(request, response, parsedBody);
 		} catch (e) {
+			console.error("Error handling request:", e);
 			response.writeHead(500, { "Content-Type": "application/json" });
 			response.end(
 				JSON.stringify({
