@@ -1,20 +1,20 @@
 {
-  "name": "mcp",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "dev": "bun --hot src/index.ts --port=3002",
-    "build": "bun build src/index.ts --outdir=dist --target=node"
-  },
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.0",
-    "zod": "^3.23.8"
-  }
+	"name": "mcp",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "bun --hot src/index.ts --port=3002",
+		"build": "bun build src/index.ts --outdir=dist --target=node"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.17.0",
+		"zod": "^3.23.8"
+	}
 }
