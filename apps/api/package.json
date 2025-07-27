@@ -1,12 +1,12 @@
 {
 	"name": "api",
-	"module": "index.ts",
+	"module": "server.ts",
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "bun --hot src/index.ts",
-		"build": "bun build src/index.ts --outdir=dist --target=node",
-		"start": "NODE_ENV=production bun dist/index.js"
+		"dev": "bun --hot src/server.ts",
+		"build": "bun build src/server.ts --outdir=dist --target=node",
+		"start": "NODE_ENV=production bun dist/server.js"
 	},
 	"dependencies": {
 		"@supercontext/db": "workspace:*",
