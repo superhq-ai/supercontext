@@ -7,20 +7,17 @@
 		"packages/*"
 	],
 	"scripts": {
-		"dev": "concurrently --names \"WEB,API\" \"bun run dev:web\" \"bun run dev:api\"",
+		"dev": "concurrently --names \"WEB,API,MCP\" \"bun run dev:web\" \"bun run dev:api\" \"bun run dev:mcp\"",
 		"dev:web": "bun --cwd apps/web dev",
 		"dev:api": "bun --cwd apps/api dev",
-		"build": "bun run build:web && bun run build:api",
+		"dev:mcp": "bun --cwd apps/mcp dev",
+		"build": "bun run build:web && bun run build:api && bun run build:mcp",
 		"build:web": "bun --cwd apps/web build",
 		"build:api": "bun --cwd apps/api build",
-		"typecheck": "bunx --bun tsc",
-		"lint": "biome lint .",
-		"lint:fix": "biome lint --write .",
-		"format": "biome format .",
-		"format:fix": "biome format --write ."
+		"build:mcp": "bun --cwd apps/mcp build",
+		"typecheck": "bunx --bun tsc"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.1.2",
 		"concurrently": "^9.2.0"
 	}
 }
