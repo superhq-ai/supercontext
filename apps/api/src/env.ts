@@ -6,6 +6,8 @@ const envSchema = z.object({
 		.default("development"),
 	DATABASE_URL: z.url(),
 	SUPERCONTEXT_CLIENT_URL: z.url().default("http://localhost:3000"),
+	BETTER_AUTH_SECRET: z.string(),
+	BETTER_AUTH_URL: z.url().default("http://localhost:3000"),
 });
 
 export const env = envSchema.parse(process.env);
