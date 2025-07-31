@@ -1,6 +1,18 @@
-import { boolean, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+	boolean,
+	jsonb,
+	pgEnum,
+	pgTable,
+	serial,
+	text,
+	timestamp,
+	vector,
+} from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm/relations";
 
 export const roleEnum = pgEnum("role", ["admin", "user"]);
+
+export const apiKeyStatusEnum = pgEnum("api_key_status", ["active", "revoked"]);
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -58,3 +70,130 @@ export const verification = pgTable("verification", {
 	createdAt: timestamp("created_at").$defaultFn(() => new Date()),
 	updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
 });
+
+// Spaces table
+export const space = pgTable("space", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	description: text("description"),
+	createdAt: timestamp("created_at")
+		.$defaultFn(() => new Date())
+		.notNull(),
+	updatedAt: timestamp("updated_at")
+		.$defaultFn(() => new Date())
+		.notNull(),
+	createdBy: text("created_by")
+		.notNull()
+		.references(() => user.id, { onDelete: "restrict" }),
+});
+
+// User-Space relationship (many-to-many)
+export const userSpace = pgTable("user_space", {
+	id: serial("id").primaryKey(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	spaceId: text("space_id")
+		.notNull()
+		.references(() => space.id, { onDelete: "cascade" }),
+	createdAt: timestamp("created_at")
+		.$defaultFn(() => new Date())
+		.notNull(),
+});
+
+// API Keys table
+export const apiKey = pgTable("api_key", {
+	id: text("id").primaryKey(),
+	key: text("key").notNull().unique(),
+	name: text("name").notNull(),
+	status: apiKeyStatusEnum("status").default("active").notNull(),
+	spaceId: text("space_id")
+		.notNull()
+		.references(() => space.id, { onDelete: "cascade" }),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	createdAt: timestamp("created_at")
+		.$defaultFn(() => new Date())
+		.notNull(),
+	updatedAt: timestamp("updated_at")
+		.$defaultFn(() => new Date())
+		.notNull(),
+	lastUsedAt: timestamp("last_used_at"),
+});
+
+// Memories table
+export const memory = pgTable("memory", {
+	id: text("id").primaryKey(),
+	content: text("content").notNull(),
+	embedding: vector("embedding", {
+		dimensions: parseInt(process.env.EMBEDDING_DIMENSIONS || "1536"),
+	}).notNull(),
+	metadata: jsonb("metadata"),
+	spaceId: text("space_id")
+		.notNull()
+		.references(() => space.id, { onDelete: "cascade" }),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "restrict" }),
+	apiKeyId: text("api_key_id").references(() => apiKey.id, {
+		onDelete: "set null",
+	}),
+	createdAt: timestamp("created_at")
+		.$defaultFn(() => new Date())
+		.notNull(),
+	updatedAt: timestamp("updated_at")
+		.$defaultFn(() => new Date())
+		.notNull(),
+});
+
+// Relations for better query support
+export const spaceRelations = relations(space, ({ many }) => ({
+	userSpaces: many(userSpace),
+	memories: many(memory),
+	apiKeys: many(apiKey),
+}));
+
+export const userRelations = relations(user, ({ many }) => ({
+	userSpaces: many(userSpace),
+	memories: many(memory),
+	apiKeys: many(apiKey),
+}));
+
+export const userSpaceRelations = relations(userSpace, ({ one }) => ({
+	user: one(user, {
+		fields: [userSpace.userId],
+		references: [user.id],
+	}),
+	space: one(space, {
+		fields: [userSpace.spaceId],
+		references: [space.id],
+	}),
+}));
+
+export const apiKeyRelations = relations(apiKey, ({ one, many }) => ({
+	user: one(user, {
+		fields: [apiKey.userId],
+		references: [user.id],
+	}),
+	space: one(space, {
+		fields: [apiKey.spaceId],
+		references: [space.id],
+	}),
+	memories: many(memory),
+}));
+
+export const memoryRelations = relations(memory, ({ one }) => ({
+	user: one(user, {
+		fields: [memory.userId],
+		references: [user.id],
+	}),
+	space: one(space, {
+		fields: [memory.spaceId],
+		references: [space.id],
+	}),
+	apiKey: one(apiKey, {
+		fields: [memory.apiKeyId],
+		references: [apiKey.id],
+	}),
+}));
