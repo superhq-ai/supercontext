@@ -20,6 +20,10 @@ async function checkSpaceAccess(c: Context, spaceId: string) {
 	const user = c.get("user");
 	const apiKey = c.get("apiKey");
 
+	if (user && user.role === "admin") {
+		return true;
+	}
+
 	if (apiKey && apiKey.spaceId === spaceId) {
 		return true;
 	}
