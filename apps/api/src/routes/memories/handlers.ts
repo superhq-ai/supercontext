@@ -18,10 +18,16 @@ import {
 // A helper to check if the user or API key has access to the space
 async function checkSpaceAccess(c: Context, spaceId: string) {
 	const user = c.get("user");
-	// TODO: Add API key check
+	const apiKey = c.get("apiKey");
+
+	if (apiKey && apiKey.spaceId === spaceId) {
+		return true;
+	}
+
 	if (!user) {
 		return false;
 	}
+
 	const space = await getSpaceWithAccess({ spaceId, userId: user.id });
 	return !!space;
 }

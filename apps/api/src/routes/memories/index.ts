@@ -1,4 +1,5 @@
 import { createProtectedRouter } from "@/lib/create-app";
+import { requireApiKey } from "@/middlewares/require-api-key";
 import {
 	handleCreateMemory,
 	handleDeleteMemory,
@@ -10,6 +11,7 @@ import {
 
 const router = createProtectedRouter();
 
+router.use("*", requireApiKey);
 router.post("/", handleCreateMemory);
 router.get("/", handleListMemories);
 router.post("/search", handleSearchMemories);

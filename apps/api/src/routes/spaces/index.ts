@@ -1,4 +1,5 @@
 import { createProtectedRouter } from "@/lib/create-app";
+import { requireApiKey } from "@/middlewares/require-api-key";
 import {
 	handleAddUserToSpace,
 	handleCreateSpace,
@@ -11,6 +12,7 @@ import {
 
 const router = createProtectedRouter();
 
+router.use("*", requireApiKey);
 router.post("/", handleCreateSpace);
 router.get("/", handleListSpaces);
 router.get("/:spaceId", handleGetSpace);
