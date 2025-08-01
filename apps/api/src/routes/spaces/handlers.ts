@@ -1,5 +1,7 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
+import type { User } from "@/types";
+
 import {
 	addUserToSpace,
 	createSpace,
@@ -49,7 +51,7 @@ export async function handleListSpaces(c: Context) {
 	return c.json(spaces);
 }
 
-function hasManagePermission(user: any, spaceCreatedBy: string) {
+function hasManagePermission(user: User, spaceCreatedBy: string) {
 	return user.role === "admin" || user.id === spaceCreatedBy;
 }
 
