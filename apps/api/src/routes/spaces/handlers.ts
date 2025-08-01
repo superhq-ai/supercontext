@@ -1,6 +1,5 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { User } from "@/types";
 
 import {
 	addUserToSpace,
@@ -51,10 +50,6 @@ export async function handleListSpaces(c: Context) {
 	return c.json(spaces);
 }
 
-function hasManagePermission(user: User, spaceCreatedBy: string) {
-	return user.role === "admin" || user.id === spaceCreatedBy;
-}
-
 export async function handleUpdateSpace(c: Context) {
 	const user = c.get("user");
 	if (!user) throw new HTTPException(401, { message: "Unauthorized" });
@@ -65,12 +60,6 @@ export async function handleUpdateSpace(c: Context) {
 		throw new HTTPException(404, {
 			message: "Space not found or access denied",
 		});
-
-	if (!hasManagePermission(user, existing.createdBy)) {
-		throw new HTTPException(403, {
-			message: "Forbidden: not space owner or admin",
-		});
-	}
 
 	const body = await c.req.json();
 	const parse = updateSpaceSchema.safeParse(body);
@@ -94,12 +83,6 @@ export async function handleDeleteSpace(c: Context) {
 			message: "Space not found or access denied",
 		});
 
-	if (!hasManagePermission(user, existing.createdBy)) {
-		throw new HTTPException(403, {
-			message: "Forbidden: not space owner or admin",
-		});
-	}
-
 	const success = await deleteSpace({ spaceId });
 	if (!success) {
 		throw new HTTPException(404, { message: "Space not found" });
@@ -117,12 +100,6 @@ export async function handleAddUserToSpace(c: Context) {
 		throw new HTTPException(404, {
 			message: "Space not found or access denied",
 		});
-
-	if (!hasManagePermission(user, existing.createdBy)) {
-		throw new HTTPException(403, {
-			message: "Forbidden: not space owner or admin",
-		});
-	}
 
 	const body = await c.req.json();
 	const parse = addUserToSpaceSchema.safeParse(body);
@@ -148,12 +125,6 @@ export async function handleRemoveUserFromSpace(c: Context) {
 		throw new HTTPException(404, {
 			message: "Space not found or access denied",
 		});
-
-	if (!hasManagePermission(user, existing.createdBy)) {
-		throw new HTTPException(403, {
-			message: "Forbidden: not space owner or admin",
-		});
-	}
 
 	const success = await removeUserFromSpace({
 		spaceId,

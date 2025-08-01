@@ -1,4 +1,5 @@
 import { createProtectedRouter } from "@/lib/create-app";
+import { requireAdmin } from "@/middlewares/require-admin";
 import { requireApiKey } from "@/middlewares/require-api-key";
 import {
 	handleAddUserToSpace,
@@ -16,9 +17,13 @@ router.use("*", requireApiKey);
 router.post("/", handleCreateSpace);
 router.get("/", handleListSpaces);
 router.get("/:spaceId", handleGetSpace);
-router.patch("/:spaceId", handleUpdateSpace);
-router.delete("/:spaceId", handleDeleteSpace);
-router.post("/:spaceId/users", handleAddUserToSpace);
-router.delete("/:spaceId/users/:userId", handleRemoveUserFromSpace);
+router.patch("/:spaceId", requireAdmin, handleUpdateSpace);
+router.delete("/:spaceId", requireAdmin, handleDeleteSpace);
+router.post("/:spaceId/users", requireAdmin, handleAddUserToSpace);
+router.delete(
+	"/:spaceId/users/:userId",
+	requireAdmin,
+	handleRemoveUserFromSpace,
+);
 
 export default router;
