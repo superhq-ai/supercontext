@@ -6,7 +6,11 @@ import { auth } from "@/lib/auth";
 import { createApp } from "@/lib/create-app";
 import notFound from "@/middlewares/not-found";
 import onError from "@/middlewares/on-error";
-import authRouter from "@/routes/auth";
+import apiKeyRouter from "./routes/api-keys";
+import authRouter from "./routes/auth";
+import memoryRouter from "./routes/memories";
+import spacesRouter from "./routes/spaces";
+import usersRouter from "./routes/users";
 
 export const app = createApp();
 
@@ -42,3 +46,8 @@ app.get("/health", (c) =>
 	c.json({ status: "ok", timestamp: new Date().toISOString() }),
 );
 app.route("/auth", authRouter);
+
+app.route("/api/users", usersRouter);
+app.route("/api/spaces", spacesRouter);
+app.route("/api/api-keys", apiKeyRouter);
+app.route("/api/memories", memoryRouter);
