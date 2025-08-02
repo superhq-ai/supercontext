@@ -49,20 +49,41 @@ export async function getMemory(memoryId: string) {
 	return found;
 }
 
-export async function listMemories(spaceId: string) {
-	return db.select().from(memory).where(eq(memory.spaceId, spaceId));
+export async function listMemories(spaceId: string, limit = 50, offset = 0) {
+	const memories = await db
+		.select()
+		.from(memory)
+		.where(eq(memory.spaceId, spaceId))
+		.limit(limit)
+		.offset(offset);
+	
+	const total = await db
+		.select({ count: sql<number>`count(*)` })
+		.from(memory)
+		.where(eq(memory.spaceId, spaceId));
+	
+	return {
+		memories,
+		pagination: {
+			limit,
+			offset,
+			total: total[0]?.count || 0,
+		},
+	};
 }
 
 export type SearchMemoriesInput = {
 	query: string;
 	spaceId: string;
 	limit?: number;
+	offset?: number;
 };
 
 export async function searchMemories({
 	query,
 	spaceId,
 	limit = 10,
+	offset = 0,
 }: SearchMemoriesInput) {
 	const queryEmbedding = await generateEmbedding(query);
 	const similarity = sql<number>`1 - (${cosineDistance(memory.embedding, queryEmbedding)})`;
@@ -77,9 +98,22 @@ export async function searchMemories({
 		.from(memory)
 		.where(sql`${eq(memory.spaceId, spaceId)} AND ${gt(similarity, 0.5)}`)
 		.orderBy((t) => desc(t.similarity))
-		.limit(limit);
+		.limit(limit)
+		.offset(offset);
 
-	return results;
+	const total = await db
+		.select({ count: sql<number>`count(*)` })
+		.from(memory)
+		.where(sql`${eq(memory.spaceId, spaceId)} AND ${gt(similarity, 0.5)}`);
+
+	return {
+		results,
+		pagination: {
+			limit,
+			offset,
+			total: total[0]?.count || 0,
+		},
+	};
 }
 
 export type UpdateMemoryInput = {

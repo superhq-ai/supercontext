@@ -9,7 +9,7 @@ import {
 	listMemories,
 	searchMemories,
 } from "./services";
-import { createMemorySchema, searchMemoriesSchema } from "./validators";
+import { createMemorySchema, searchMemoriesSchema, listMemoriesSchema } from "./validators";
 
 // A helper to check if the user or API key has access to the space
 async function checkSpaceAccess(c: Context, spaceId: string) {
@@ -66,8 +66,16 @@ export async function handleGetMemory(c: Context) {
 
 export async function handleListMemories(c: Context) {
 	const spaceId = c.req.query("spaceId");
+	const limit = parseInt(c.req.query("limit") || "50");
+	const offset = parseInt(c.req.query("offset") || "0");
+	
 	if (!spaceId) {
 		return c.json({ error: "spaceId is required" }, 400);
+	}
+
+	const parse = listMemoriesSchema.safeParse({ spaceId, limit, offset });
+	if (!parse.success) {
+		return c.json({ error: "Invalid input", details: parse.error.errors }, 400);
 	}
 
 	const hasAccess = await checkSpaceAccess(c, spaceId);
@@ -75,8 +83,8 @@ export async function handleListMemories(c: Context) {
 		throw new HTTPException(403, { message: "Forbidden" });
 	}
 
-	const memories = await listMemories(spaceId);
-	return c.json(memories);
+	const result = await listMemories(spaceId, limit, offset);
+	return c.json(result);
 }
 
 export async function handleSearchMemories(c: Context) {
@@ -91,8 +99,8 @@ export async function handleSearchMemories(c: Context) {
 		throw new HTTPException(403, { message: "Forbidden" });
 	}
 
-	const results = await searchMemories(parse.data);
-	return c.json(results);
+	const result = await searchMemories(parse.data);
+	return c.json(result);
 }
 
 export async function handleDeleteMemory(c: Context) {

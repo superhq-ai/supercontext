@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router";
 import {
 	Card,
 	CardContent,
@@ -17,16 +18,14 @@ export function DashboardPage() {
 		<div className="min-h-screen bg-background">
 			<Navigation />
 
-			{/* Main Content */}
 			<main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
 				<div className="px-4 py-6 sm:px-0">
-					{/* Page Title */}
 					<div className="mb-8">
 						<h1 className="text-3xl font-bold text-foreground mb-2">
 							Dashboard
 						</h1>
 						<p className="text-muted-foreground">
-							Welcome back! Here's an overview of your account and activities.
+							Welcome back! Here's an overview of your account and quick access to your tools.
 						</p>
 					</div>
 					
@@ -82,23 +81,31 @@ export function DashboardPage() {
 							<CardHeader>
 								<CardTitle>Quick Actions</CardTitle>
 								<CardDescription>
-									Common tasks and navigation
+									Access your main tools and features
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-3">
-								<Button className="w-full justify-start" variant="outline">
-									View Spaces
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									Manage API Keys
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									View Memories
-								</Button>
-								{user?.role === "admin" && (
+								<Link to="/memories">
 									<Button className="w-full justify-start" variant="outline">
-										Admin Panel
+										View Memories
 									</Button>
+								</Link>
+								<Link to="/spaces">
+									<Button className="w-full justify-start" variant="outline">
+										Manage Spaces
+									</Button>
+								</Link>
+								<Link to="/api-keys">
+									<Button className="w-full justify-start" variant="outline">
+										API Keys
+									</Button>
+								</Link>
+								{user?.role === "admin" && (
+									<Link to="/admin">
+										<Button className="w-full justify-start" variant="outline">
+											Admin Panel
+										</Button>
+									</Link>
 								)}
 							</CardContent>
 						</Card>

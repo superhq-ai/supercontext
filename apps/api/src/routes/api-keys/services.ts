@@ -5,7 +5,7 @@ import { apiKey, memory, userSpace } from "@/db/schema";
 
 export type CreateApiKeyInput = {
 	name: string;
-	spaceId: string;
+	spaceId?: string;
 	userId: string;
 };
 
@@ -14,14 +14,16 @@ export async function createApiKey({
 	spaceId,
 	userId,
 }: CreateApiKeyInput) {
-	// Verify user has access to the space
-	const assigned = await db
-		.select()
-		.from(userSpace)
-		.where(and(eq(userSpace.spaceId, spaceId), eq(userSpace.userId, userId)))
-		.limit(1);
-	if (assigned.length === 0) {
-		throw new Error("Forbidden: no access to space");
+	// Verify user has access to the space if spaceId is provided
+	if (spaceId) {
+		const assigned = await db
+			.select()
+			.from(userSpace)
+			.where(and(eq(userSpace.spaceId, spaceId), eq(userSpace.userId, userId)))
+			.limit(1);
+		if (assigned.length === 0) {
+			throw new Error("Forbidden: no access to space");
+		}
 	}
 
 	const id = crypto.randomUUID();

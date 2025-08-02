@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router";
 import {
 	Card,
 	CardContent,
@@ -17,81 +18,38 @@ export function AdminPage() {
 		<div className="min-h-screen bg-background">
 			<Navigation />
 
-			{/* Main Content */}
 			<main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
 				<div className="px-4 py-6 sm:px-0">
-					{/* Welcome Section */}
 					<div className="mb-8">
 						<h1 className="text-3xl font-bold text-foreground mb-2">
 							Admin Panel
 						</h1>
 						<p className="text-muted-foreground">
-							Manage your application, users, and system settings from here.
+							Administrative tools and system management
 						</p>
 					</div>
 
 					{/* Admin Actions Grid */}
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-						{/* User Management */}
+						{/* Spaces Management */}
 						<Card>
 							<CardHeader>
-								<CardTitle>User Management</CardTitle>
+								<CardTitle>Spaces Management</CardTitle>
 								<CardDescription>
-									Manage user accounts and permissions
+									Manage user spaces and content
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-3">
-								<Button className="w-full justify-start" variant="outline">
-									View All Users
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									Create New User
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									Manage Roles
-								</Button>
-							</CardContent>
-						</Card>
-
-						{/* System Settings */}
-						<Card>
-							<CardHeader>
-								<CardTitle>System Settings</CardTitle>
-								<CardDescription>
-									Configure application settings
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="space-y-3">
-								<Button className="w-full justify-start" variant="outline">
-									General Settings
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									Security Settings
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									Email Configuration
-								</Button>
-							</CardContent>
-						</Card>
-
-						{/* Analytics */}
-						<Card>
-							<CardHeader>
-								<CardTitle>Analytics</CardTitle>
-								<CardDescription>
-									View system analytics and reports
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="space-y-3">
-								<Button className="w-full justify-start" variant="outline">
-									User Analytics
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									System Performance
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									Usage Reports
-								</Button>
+								<Link to="/spaces">
+									<Button className="w-full justify-start" variant="outline">
+										View All Spaces
+									</Button>
+								</Link>
+								<Link to="/spaces">
+									<Button className="w-full justify-start" variant="outline">
+										Create New Space
+									</Button>
+								</Link>
 							</CardContent>
 						</Card>
 
@@ -104,92 +62,90 @@ export function AdminPage() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-3">
-								<Button className="w-full justify-start" variant="outline">
-									View All API Keys
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									API Usage Stats
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									Rate Limiting
-								</Button>
+								<Link to="/api-keys">
+									<Button className="w-full justify-start" variant="outline">
+										View All API Keys
+									</Button>
+								</Link>
+								<Link to="/api-keys">
+									<Button className="w-full justify-start" variant="outline">
+										Create New API Key
+									</Button>
+								</Link>
 							</CardContent>
 						</Card>
 
-						{/* Spaces Management */}
+						{/* Memories Management */}
 						<Card>
 							<CardHeader>
-								<CardTitle>Spaces Management</CardTitle>
+								<CardTitle>Memories Management</CardTitle>
 								<CardDescription>
-									Manage user spaces and content
+									View and manage memories across spaces
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-3">
-								<Button className="w-full justify-start" variant="outline">
-									View All Spaces
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									Space Analytics
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									Content Moderation
-								</Button>
-							</CardContent>
-						</Card>
-
-						{/* System Health */}
-						<Card>
-							<CardHeader>
-								<CardTitle>System Health</CardTitle>
-								<CardDescription>
-									Monitor system status and logs
-								</CardDescription>
-							</CardHeader>
-							<CardContent className="space-y-3">
-								<Button className="w-full justify-start" variant="outline">
-									Health Check
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									View Logs
-								</Button>
-								<Button className="w-full justify-start" variant="outline">
-									Database Status
-								</Button>
+								<Link to="/memories">
+									<Button className="w-full justify-start" variant="outline">
+										View All Memories
+									</Button>
+								</Link>
+								<Link to="/memories">
+									<Button className="w-full justify-start" variant="outline">
+										Search Memories
+									</Button>
+								</Link>
 							</CardContent>
 						</Card>
 					</div>
 
-					{/* Quick Stats */}
+					{/* Admin Info */}
 					<div className="mt-8">
-						<h3 className="text-lg font-semibold text-foreground mb-4">
-							Quick Stats
-						</h3>
-						<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-							<Card>
-								<CardContent className="p-4">
-									<div className="text-2xl font-bold text-blue-600">1,234</div>
-									<div className="text-sm text-muted-foreground">Total Users</div>
-								</CardContent>
-							</Card>
-							<Card>
-								<CardContent className="p-4">
-									<div className="text-2xl font-bold text-green-600">567</div>
-									<div className="text-sm text-muted-foreground">Active Spaces</div>
-								</CardContent>
-							</Card>
-							<Card>
-								<CardContent className="p-4">
-									<div className="text-2xl font-bold text-purple-600">89</div>
-									<div className="text-sm text-muted-foreground">API Keys</div>
-								</CardContent>
-							</Card>
-							<Card>
-								<CardContent className="p-4">
-									<div className="text-2xl font-bold text-orange-600">99.9%</div>
-									<div className="text-sm text-muted-foreground">Uptime</div>
-								</CardContent>
-							</Card>
-						</div>
+						<Card>
+							<CardHeader>
+								<CardTitle>Admin Information</CardTitle>
+								<CardDescription>
+									Current admin session details
+								</CardDescription>
+							</CardHeader>
+							<CardContent>
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+									<div>
+										<label className="text-sm font-medium text-muted-foreground">
+											Admin User
+										</label>
+										<p className="text-sm text-foreground">
+											{user?.name} ({user?.email})
+										</p>
+									</div>
+									<div>
+										<label className="text-sm font-medium text-muted-foreground">
+											Session ID
+										</label>
+										<p className="text-sm text-foreground font-mono">
+											{session?.id?.slice(0, 8)}...
+										</p>
+									</div>
+									<div>
+										<label className="text-sm font-medium text-muted-foreground">
+											Role
+										</label>
+										<div className="mt-1">
+											<Badge variant="default">
+												{user?.role}
+											</Badge>
+										</div>
+									</div>
+									<div>
+										<label className="text-sm font-medium text-muted-foreground">
+											Session Expires
+										</label>
+										<p className="text-sm text-foreground">
+											{new Date(session?.expiresAt || "").toLocaleString()}
+										</p>
+									</div>
+								</div>
+							</CardContent>
+						</Card>
 					</div>
 				</div>
 			</main>

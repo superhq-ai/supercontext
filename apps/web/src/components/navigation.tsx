@@ -29,6 +29,21 @@ export function Navigation() {
 									Dashboard
 								</Button>
 							</Link>
+							<Link to="/memories">
+								<Button variant="ghost" size="sm">
+									Memories
+								</Button>
+							</Link>
+							<Link to="/spaces">
+								<Button variant="ghost" size="sm">
+									Spaces
+								</Button>
+							</Link>
+							<Link to="/api-keys">
+								<Button variant="ghost" size="sm">
+									API Keys
+								</Button>
+							</Link>
 							{user?.role === "admin" && (
 								<Link to="/admin">
 									<Button variant="ghost" size="sm">
