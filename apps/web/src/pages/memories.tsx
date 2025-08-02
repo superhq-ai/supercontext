@@ -1,6 +1,7 @@
 import { Filter, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Navigation } from "@/components/navigation";
+import { Pagination } from "@/components/pagination";
 import { SpaceSelector } from "@/components/space-selector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -416,44 +417,12 @@ export function MemoriesPage() {
 											</CardContent>
 										</Card>
 									))}
-									{totalPages > 1 && (
-										<div className="flex justify-center items-center gap-4 mt-6">
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() =>
-													handlePageChange(pagination.offset - pagination.limit)
-												}
-												disabled={pagination.offset === 0}
-											>
-												Previous
-											</Button>
-											<span className="text-sm text-muted-foreground">
-												Page {currentPage} of {totalPages}
-											</span>
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() =>
-													handlePageChange(pagination.offset + pagination.limit)
-												}
-												disabled={
-													pagination.offset + pagination.limit >=
-													pagination.total
-												}
-											>
-												Next
-											</Button>
-										</div>
-									)}
-									<div className="text-center text-sm text-muted-foreground mt-4">
-										Showing {pagination.offset + 1} to{" "}
-										{Math.min(
-											pagination.offset + pagination.limit,
-											pagination.total,
-										)}{" "}
-										of {pagination.total} memories
-									</div>
+									<Pagination
+										currentPage={currentPage}
+										totalPages={totalPages}
+										onPageChange={handlePageChange}
+										pagination={pagination}
+									/>
 								</>
 							)
 						)}
