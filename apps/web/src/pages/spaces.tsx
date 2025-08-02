@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/auth-context";
+import { useCallback, useEffect, useState } from "react";
+import { Navigation } from "@/components/navigation";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
 	Card,
 	CardContent,
@@ -9,8 +9,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Navigation } from "@/components/navigation";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/auth-context";
+import { fetchWithAuth } from "@/lib/utils";
 
 interface Space {
 	id: string;
@@ -28,15 +29,11 @@ export function SpacesPage() {
 	const [newSpaceName, setNewSpaceName] = useState("");
 	const [newSpaceDescription, setNewSpaceDescription] = useState("");
 
-	const fetchSpaces = async () => {
+	const fetchSpaces = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetch("/api/spaces", {
-				headers: {
-					Authorization: `Bearer ${session?.accessToken}`,
-				},
-			});
-			
+			const response = await fetchWithAuth("/api/spaces", session?.token);
+
 			if (response.ok) {
 				const data = await response.json();
 				setSpaces(data);
@@ -46,25 +43,21 @@ export function SpacesPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [session?.token]);
 
 	const createSpace = async () => {
 		if (!newSpaceName.trim()) return;
-		
+
 		setIsCreating(true);
 		try {
-			const response = await fetch("/api/spaces", {
+			const response = await fetchWithAuth("/api/spaces", session?.token, {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${session?.accessToken}`,
-				},
 				body: JSON.stringify({
 					name: newSpaceName,
 					description: newSpaceDescription || undefined,
 				}),
 			});
-			
+
 			if (response.ok) {
 				const newSpace = await response.json();
 				setSpaces([...spaces, newSpace]);
@@ -79,20 +72,25 @@ export function SpacesPage() {
 	};
 
 	const deleteSpace = async (spaceId: string) => {
-		if (!confirm("Are you sure you want to delete this space? This action cannot be undone.")) {
+		if (
+			!confirm(
+				"Are you sure you want to delete this space? This action cannot be undone.",
+			)
+		) {
 			return;
 		}
-		
+
 		try {
-			const response = await fetch(`/api/spaces/${spaceId}`, {
-				method: "DELETE",
-				headers: {
-					Authorization: `Bearer ${session?.accessToken}`,
+			const response = await fetchWithAuth(
+				`/api/spaces/${spaceId}`,
+				session?.token,
+				{
+					method: "DELETE",
 				},
-			});
-			
+			);
+
 			if (response.ok) {
-				setSpaces(spaces.filter(space => space.id !== spaceId));
+				setSpaces(spaces.filter((space) => space.id !== spaceId));
 			}
 		} catch (error) {
 			console.error("Failed to delete space:", error);
@@ -101,7 +99,7 @@ export function SpacesPage() {
 
 	useEffect(() => {
 		fetchSpaces();
-	}, []);
+	}, [fetchSpaces]);
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -130,10 +128,14 @@ export function SpacesPage() {
 							<CardContent>
 								<div className="space-y-4">
 									<div>
-										<label className="text-sm font-medium text-muted-foreground">
+										<label
+											htmlFor="spaceName"
+											className="text-sm font-medium text-muted-foreground"
+										>
 											Space Name
 										</label>
 										<Input
+											id="spaceName"
 											placeholder="Enter space name..."
 											value={newSpaceName}
 											onChange={(e) => setNewSpaceName(e.target.value)}
@@ -141,18 +143,22 @@ export function SpacesPage() {
 										/>
 									</div>
 									<div>
-										<label className="text-sm font-medium text-muted-foreground">
+										<label
+											htmlFor="spaceDescription"
+											className="text-sm font-medium text-muted-foreground"
+										>
 											Description (Optional)
 										</label>
 										<Input
+											id="spaceDescription"
 											placeholder="Enter space description..."
 											value={newSpaceDescription}
 											onChange={(e) => setNewSpaceDescription(e.target.value)}
 											className="mt-1"
 										/>
 									</div>
-									<Button 
-										onClick={createSpace} 
+									<Button
+										onClick={createSpace}
 										disabled={isCreating || !newSpaceName.trim()}
 									>
 										{isCreating ? "Creating..." : "Create Space"}
@@ -216,4 +222,4 @@ export function SpacesPage() {
 			</main>
 		</div>
 	);
-} 
+}

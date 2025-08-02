@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Navigation } from "@/components/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,13 +12,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/auth-context";
+import { fetchWithAuth } from "@/lib/utils";
 
 interface Memory {
 	id: string;
 	content: string;
-	metadata?: any;
+	metadata?: Record<string, unknown>;
 	createdAt: string;
 	updatedAt: string;
+	similarity?: number;
 }
 
 interface PaginationInfo {
@@ -63,79 +65,72 @@ export function MemoriesPage() {
 		setNewMemorySpaceId("demo-space-id");
 	}, []);
 
-	const fetchMemories = async (spaceId: string, limit = 20, offset = 0) => {
-		if (!spaceId) return;
+	const fetchMemories = useCallback(
+		async (spaceId: string, limit = 20, offset = 0) => {
+			if (!spaceId) return;
 
-		setIsLoading(true);
-		try {
-			const response = await fetch(
-				`/api/memories?spaceId=${spaceId}&limit=${limit}&offset=${offset}`,
-				{
-					headers: {
-						Authorization: `Bearer ${session?.token}`,
+			setIsLoading(true);
+			try {
+				const response = await fetchWithAuth(
+					`/api/memories?spaceId=${spaceId}&limit=${limit}&offset=${offset}`,
+					session?.token,
+				);
+
+				if (response.ok) {
+					const data: MemoriesResponse = await response.json();
+					setMemories(data.memories);
+					setPagination(data.pagination);
+				}
+			} catch (error) {
+				console.error("Failed to fetch memories:", error);
+			} finally {
+				setIsLoading(false);
+			}
+		},
+		[session?.token],
+	);
+
+	const searchMemories = useCallback(
+		async (query: string, spaceId: string, limit = 20, offset = 0) => {
+			if (!query.trim() || !spaceId) return;
+
+			setIsSearching(true);
+			try {
+				const response = await fetchWithAuth(
+					"/api/memories/search",
+					session?.token,
+					{
+						method: "POST",
+						body: JSON.stringify({
+							query,
+							spaceId,
+							limit,
+							offset,
+						}),
 					},
-				},
-			);
+				);
 
-			if (response.ok) {
-				const data: MemoriesResponse = await response.json();
-				setMemories(data.memories);
-				setPagination(data.pagination);
+				if (response.ok) {
+					const data: SearchResponse = await response.json();
+					setSearchResults(data.results);
+					setPagination(data.pagination);
+				}
+			} catch (error) {
+				console.error("Failed to search memories:", error);
+			} finally {
+				setIsSearching(false);
 			}
-		} catch (error) {
-			console.error("Failed to fetch memories:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	const searchMemories = async (
-		query: string,
-		spaceId: string,
-		limit = 20,
-		offset = 0,
-	) => {
-		if (!query.trim() || !spaceId) return;
-
-		setIsSearching(true);
-		try {
-			const response = await fetch("/api/memories/search", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${session?.token}`,
-				},
-				body: JSON.stringify({
-					query,
-					spaceId,
-					limit,
-					offset,
-				}),
-			});
-
-			if (response.ok) {
-				const data: SearchResponse = await response.json();
-				setSearchResults(data.results);
-				setPagination(data.pagination);
-			}
-		} catch (error) {
-			console.error("Failed to search memories:", error);
-		} finally {
-			setIsSearching(false);
-		}
-	};
+		},
+		[session?.token],
+	);
 
 	const createMemory = async () => {
 		if (!newMemoryContent.trim() || !newMemorySpaceId) return;
 
 		setIsCreating(true);
 		try {
-			const response = await fetch("/api/memories", {
+			const response = await fetchWithAuth("/api/memories", session?.token, {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${session?.token}`,
-				},
 				body: JSON.stringify({
 					content: newMemoryContent,
 					spaceId: newMemorySpaceId,
@@ -174,7 +169,7 @@ export function MemoriesPage() {
 		if (selectedSpaceId) {
 			fetchMemories(selectedSpaceId);
 		}
-	}, [selectedSpaceId]);
+	}, [selectedSpaceId, fetchMemories]);
 
 	const displayMemories = searchQuery.trim() ? searchResults : memories;
 	const totalPages = Math.ceil(pagination.total / pagination.limit);
@@ -204,10 +199,14 @@ export function MemoriesPage() {
 						<CardContent>
 							<div className="space-y-4">
 								<div>
-									<label className="text-sm font-medium text-muted-foreground">
+									<label
+										htmlFor="newMemorySpaceId"
+										className="text-sm font-medium text-muted-foreground"
+									>
 										Space ID
 									</label>
 									<Input
+										id="newMemorySpaceId"
 										placeholder="Enter space ID..."
 										value={newMemorySpaceId}
 										onChange={(e) => setNewMemorySpaceId(e.target.value)}
@@ -215,10 +214,14 @@ export function MemoriesPage() {
 									/>
 								</div>
 								<div>
-									<label className="text-sm font-medium text-muted-foreground">
+									<label
+										htmlFor="newMemoryContent"
+										className="text-sm font-medium text-muted-foreground"
+									>
 										Memory Content
 									</label>
 									<Textarea
+										id="newMemoryContent"
 										placeholder="Enter your memory content..."
 										value={newMemoryContent}
 										onChange={(e) => setNewMemoryContent(e.target.value)}
@@ -299,10 +302,9 @@ export function MemoriesPage() {
 													Memory {memory.id.slice(0, 8)}...
 												</CardTitle>
 												<div className="flex gap-2">
-													{searchQuery && "similarity" in memory && (
+													{memory.similarity && (
 														<Badge variant="secondary">
-															{Math.round((memory as any).similarity * 100)}%
-															match
+															{Math.round(memory.similarity * 100)}% match
 														</Badge>
 													)}
 													<Badge variant="outline">

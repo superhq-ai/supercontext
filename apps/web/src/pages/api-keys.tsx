@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Navigation } from "@/components/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/auth-context";
+import { fetchWithAuth } from "@/lib/utils";
 
 interface ApiKey {
 	id: string;
@@ -30,14 +31,10 @@ export function ApiKeysPage() {
 	const [newKeyName, setNewKeyName] = useState("");
 	const [newKeySpaceId, setNewKeySpaceId] = useState("");
 
-	const fetchApiKeys = async () => {
+	const fetchApiKeys = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetch("/api/api-keys", {
-				headers: {
-					Authorization: `Bearer ${session?.token}`,
-				},
-			});
+			const response = await fetchWithAuth("/api/api-keys", session?.token);
 
 			if (response.ok) {
 				const data = await response.json();
@@ -48,19 +45,15 @@ export function ApiKeysPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [session?.token]);
 
 	const createApiKey = async () => {
 		if (!newKeyName.trim()) return;
 
 		setIsCreating(true);
 		try {
-			const response = await fetch("/api/api-keys", {
+			const response = await fetchWithAuth("/api/api-keys", session?.token, {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${session?.token}`,
-				},
 				body: JSON.stringify({
 					name: newKeyName,
 					spaceId: newKeySpaceId || undefined,
@@ -82,12 +75,13 @@ export function ApiKeysPage() {
 
 	const revokeApiKey = async (apiKeyId: string) => {
 		try {
-			const response = await fetch(`/api/api-keys/${apiKeyId}/revoke`, {
-				method: "PATCH",
-				headers: {
-					Authorization: `Bearer ${session?.token}`,
+			const response = await fetchWithAuth(
+				`/api/api-keys/${apiKeyId}/revoke`,
+				session?.token,
+				{
+					method: "PATCH",
 				},
-			});
+			);
 
 			if (response.ok) {
 				setApiKeys(
@@ -111,12 +105,13 @@ export function ApiKeysPage() {
 		}
 
 		try {
-			const response = await fetch(`/api/api-keys/${apiKeyId}`, {
-				method: "DELETE",
-				headers: {
-					Authorization: `Bearer ${session?.token}`,
+			const response = await fetchWithAuth(
+				`/api/api-keys/${apiKeyId}`,
+				session?.token,
+				{
+					method: "DELETE",
 				},
-			});
+			);
 
 			if (response.ok) {
 				setApiKeys(apiKeys.filter((key) => key.id !== apiKeyId));
@@ -128,7 +123,7 @@ export function ApiKeysPage() {
 
 	useEffect(() => {
 		fetchApiKeys();
-	}, []);
+	}, [fetchApiKeys]);
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -156,10 +151,14 @@ export function ApiKeysPage() {
 						<CardContent>
 							<div className="space-y-4">
 								<div>
-									<label className="text-sm font-medium text-muted-foreground">
+									<label
+										htmlFor="apiKeyName"
+										className="text-sm font-medium text-muted-foreground"
+									>
 										API Key Name
 									</label>
 									<Input
+										id="apiKeyName"
 										placeholder="Enter API key name..."
 										value={newKeyName}
 										onChange={(e) => setNewKeyName(e.target.value)}
@@ -167,10 +166,14 @@ export function ApiKeysPage() {
 									/>
 								</div>
 								<div>
-									<label className="text-sm font-medium text-muted-foreground">
+									<label
+										htmlFor="spaceId"
+										className="text-sm font-medium text-muted-foreground"
+									>
 										Space ID (Optional)
 									</label>
 									<Input
+										id="spaceId"
 										placeholder="Enter space ID for restricted access..."
 										value={newKeySpaceId}
 										onChange={(e) => setNewKeySpaceId(e.target.value)}
