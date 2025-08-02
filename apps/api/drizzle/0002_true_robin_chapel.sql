@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS "memoryEmbeddingIndex" ON "memory" USING hnsw ("embedding" vector_cosine_ops);

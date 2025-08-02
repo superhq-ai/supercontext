@@ -1,5 +1,6 @@
 import prompts from "prompts";
 import { auth } from "@/lib/auth";
+import { updateUserRole } from "@/lib/update-user-role";
 import { createSpace } from "@/routes/spaces/services";
 
 async function main() {
@@ -27,6 +28,13 @@ async function main() {
 			password: password.value,
 		},
 	});
+
+	if (!userId) {
+		throw new Error("Failed to create admin user");
+	}
+
+	// Set the user role to admin
+	await updateUserRole(userId, "admin");
 
 	const defaultSpace = await createSpace({
 		name: "Default Space",

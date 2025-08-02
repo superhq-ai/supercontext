@@ -45,7 +45,7 @@ app.get("/", (c) => c.text("Welcome to Supercontext!"));
 app.get("/health", (c) =>
 	c.json({ status: "ok", timestamp: new Date().toISOString() }),
 );
-app.route("/auth", authRouter);
+app.route("/api/auth", authRouter);
 
 app.route("/users", usersRouter);
 app.route("/spaces", spacesRouter);

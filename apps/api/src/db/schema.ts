@@ -21,6 +21,9 @@ export const user = pgTable("user", {
 	name: text("name").notNull(),
 	email: text("email").notNull().unique(),
 	role: roleEnum("role").default("user").notNull(),
+	active: boolean("active")
+		.$defaultFn(() => true)
+		.notNull(),
 	emailVerified: boolean("email_verified")
 		.$defaultFn(() => false)
 		.notNull(),
