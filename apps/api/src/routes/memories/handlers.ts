@@ -44,12 +44,19 @@ export async function handleCreateMemory(c: Context) {
 		return c.json({ error: "Invalid input", details: parse.error.errors }, 400);
 	}
 
-	const hasAccess = await checkSpaceAccess(c, parse.data.spaceId);
-	if (!hasAccess) {
-		throw new HTTPException(403, { message: "Forbidden" });
+	for (const spaceId of parse.data.spaceIds) {
+		const hasAccess = await checkSpaceAccess(c, spaceId);
+		if (!hasAccess) {
+			throw new HTTPException(403, { message: "Forbidden" });
+		}
 	}
 
-	const memory = await createMemory({ ...parse.data, userId });
+	const memory = await createMemory({
+		content: parse.data.content,
+		spaceIds: parse.data.spaceIds,
+		metadata: parse.data.metadata,
+		userId,
+	});
 	return c.json(memory, 201);
 }
 
@@ -60,12 +67,14 @@ export async function handleGetMemory(c: Context) {
 		throw new HTTPException(404, { message: "Memory not found" });
 	}
 
-	if (!memory.space) {
+	if (!memory.spaces || memory.spaces.length === 0) {
 		throw new HTTPException(404, { message: "Space not found for memory" });
 	}
-	const hasAccess = await checkSpaceAccess(c, memory.space.id);
-	if (!hasAccess) {
-		throw new HTTPException(403, { message: "Forbidden" });
+	for (const space of memory.spaces) {
+		const hasAccess = await checkSpaceAccess(c, space.id);
+		if (!hasAccess) {
+			throw new HTTPException(403, { message: "Forbidden" });
+		}
 	}
 
 	return c.json(memory);
@@ -133,12 +142,14 @@ export async function handleDeleteMemory(c: Context) {
 		throw new HTTPException(404, { message: "Memory not found" });
 	}
 
-	if (!memory.space) {
+	if (!memory.spaces || memory.spaces.length === 0) {
 		throw new HTTPException(404, { message: "Space not found for memory" });
 	}
-	const hasAccess = await checkSpaceAccess(c, memory.space.id);
-	if (!hasAccess) {
-		throw new HTTPException(403, { message: "Forbidden" });
+	for (const space of memory.spaces) {
+		const hasAccess = await checkSpaceAccess(c, space.id);
+		if (!hasAccess) {
+			throw new HTTPException(403, { message: "Forbidden" });
+		}
 	}
 
 	await deleteMemory(memoryId);

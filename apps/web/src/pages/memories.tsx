@@ -46,12 +46,12 @@ export function MemoriesPage() {
 		isCreating,
 		creationStatus,
 		newMemoryContent,
-		newMemorySpaceId,
+		newMemorySpaceIds,
 		setSearchQuery,
 		setSelectedSpaceIds,
 		setSortOrder,
 		setNewMemoryContent,
-		setNewMemorySpaceId,
+		setNewMemorySpaceIds,
 		fetchSpaces,
 		fetchData,
 		createMemory,
@@ -172,7 +172,7 @@ export function MemoriesPage() {
 						<Dialog
 							onOpenChange={(open) => {
 								if (!open) {
-									setNewMemorySpaceId("");
+									setNewMemorySpaceIds([]);
 									useMemoriesStore.setState({ creationStatus: null });
 								}
 							}}
@@ -190,22 +190,20 @@ export function MemoriesPage() {
 								<div className="space-y-4">
 									<div>
 										<label
-											htmlFor="newMemorySpaceId"
+											htmlFor="newMemorySpaceIds"
 											className="text-sm font-medium text-muted-foreground"
 										>
-											Space
+											Spaces
 										</label>
 										<SpaceSelector
 											options={spaces.map((s) => ({
 												value: s.id,
 												label: s.name,
 											}))}
-											selected={[newMemorySpaceId]}
-											onChange={(selected) =>
-												setNewMemorySpaceId(selected[0] || "")
-											}
+											selected={newMemorySpaceIds}
+											onChange={setNewMemorySpaceIds}
 											className="mt-1"
-											mode="single"
+											mode="multiple"
 										/>
 									</div>
 									<div>
@@ -230,7 +228,7 @@ export function MemoriesPage() {
 											disabled={
 												isCreating ||
 												!newMemoryContent.trim() ||
-												!newMemorySpaceId
+												newMemorySpaceIds.length === 0
 											}
 										>
 											{isCreating ? "Creating..." : "Create Memory"}

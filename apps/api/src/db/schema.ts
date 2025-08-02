@@ -137,9 +137,6 @@ export const memory = pgTable(
 			dimensions: EMBEDDING_DIMENSIONS,
 		}).notNull(),
 		metadata: jsonb("metadata"),
-		spaceId: text("space_id")
-			.notNull()
-			.references(() => space.id, { onDelete: "cascade" }),
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "restrict" }),
@@ -164,7 +161,7 @@ export const memory = pgTable(
 // Relations for better query support
 export const spaceRelations = relations(space, ({ many }) => ({
 	userSpaces: many(userSpace),
-	memories: many(memory),
+	memories: many(memoriesToSpaces),
 	apiKeys: many(apiKey),
 }));
 
@@ -197,17 +194,37 @@ export const apiKeyRelations = relations(apiKey, ({ one, many }) => ({
 	memories: many(memory),
 }));
 
-export const memoryRelations = relations(memory, ({ one }) => ({
+export const memoriesToSpaces = pgTable("memories_to_spaces", {
+	memoryId: text("memory_id")
+		.notNull()
+		.references(() => memory.id, { onDelete: "cascade" }),
+	spaceId: text("space_id")
+		.notNull()
+		.references(() => space.id, { onDelete: "cascade" }),
+});
+
+export const memoryRelations = relations(memory, ({ one, many }) => ({
 	user: one(user, {
 		fields: [memory.userId],
 		references: [user.id],
-	}),
-	space: one(space, {
-		fields: [memory.spaceId],
-		references: [space.id],
 	}),
 	apiKey: one(apiKey, {
 		fields: [memory.apiKeyId],
 		references: [apiKey.id],
 	}),
+	spaces: many(memoriesToSpaces),
 }));
+
+export const memoriesToSpacesRelations = relations(
+	memoriesToSpaces,
+	({ one }) => ({
+		memory: one(memory, {
+			fields: [memoriesToSpaces.memoryId],
+			references: [memory.id],
+		}),
+		space: one(space, {
+			fields: [memoriesToSpaces.spaceId],
+			references: [space.id],
+		}),
+	}),
+);

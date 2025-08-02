@@ -1,12 +1,12 @@
 import crypto from "node:crypto";
 import { cosineDistance, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { memory, space } from "@/db/schema";
+import { memoriesToSpaces, memory, space } from "@/db/schema";
 import { generateEmbedding } from "@/lib/embedding";
 
 export type CreateMemoryInput = {
 	content: string;
-	spaceId: string;
+	spaceIds: string[];
 	metadata?: object;
 	userId: string;
 	apiKeyId?: string;
@@ -14,7 +14,7 @@ export type CreateMemoryInput = {
 
 export async function createMemory({
 	content,
-	spaceId,
+	spaceIds,
 	metadata,
 	userId,
 	apiKeyId,
@@ -29,13 +29,21 @@ export async function createMemory({
 		.values({
 			id,
 			content,
-			spaceId,
 			metadata,
 			userId,
 			apiKeyId,
 			embedding,
 		})
 		.returning();
+
+	if (spaceIds.length > 0) {
+		await db.insert(memoriesToSpaces).values(
+			spaceIds.map((spaceId) => ({
+				memoryId: id,
+				spaceId,
+			})),
+		);
+	}
 
 	return created;
 }
@@ -47,15 +55,17 @@ export async function getMemory(memoryId: string) {
 			content: memory.content,
 			metadata: memory.metadata,
 			createdAt: memory.createdAt,
-			space: {
-				id: space.id,
-				name: space.name,
-			},
+			spaces: sql<
+				{ id: string; name: string }[]
+			>`json_agg(json_build_object('id', ${space.id}, 'name', ${space.name}))`,
 		})
 		.from(memory)
-		.leftJoin(space, eq(memory.spaceId, space.id))
+		.leftJoin(memoriesToSpaces, eq(memory.id, memoriesToSpaces.memoryId))
+		.leftJoin(space, eq(memoriesToSpaces.spaceId, space.id))
 		.where(eq(memory.id, memoryId))
+		.groupBy(memory.id)
 		.limit(1);
+
 	return found;
 }
 
@@ -74,8 +84,12 @@ export async function listMemories({
 	const totalQuery = db.select({ count: sql<number>`count(*)` }).from(memory);
 
 	if (spaceIds.length > 0) {
-		query.where(inArray(memory.spaceId, spaceIds));
-		totalQuery.where(inArray(memory.spaceId, spaceIds));
+		const subquery = db
+			.select({ memoryId: memoriesToSpaces.memoryId })
+			.from(memoriesToSpaces)
+			.where(inArray(memoriesToSpaces.spaceId, spaceIds));
+		query.where(inArray(memory.id, subquery));
+		totalQuery.where(inArray(memory.id, subquery));
 	}
 
 	if (sortOrder) {
@@ -118,7 +132,11 @@ export async function searchMemories({
 
 	const conditions = [gt(similarity, 0.5)];
 	if (spaceIds.length > 0) {
-		conditions.push(inArray(memory.spaceId, spaceIds));
+		const subquery = db
+			.select({ memoryId: memoriesToSpaces.memoryId })
+			.from(memoriesToSpaces)
+			.where(inArray(memoriesToSpaces.spaceId, spaceIds));
+		conditions.push(inArray(memory.id, subquery));
 	}
 
 	const results = await db
@@ -127,7 +145,6 @@ export async function searchMemories({
 			content: memory.content,
 			metadata: memory.metadata,
 			createdAt: memory.createdAt,
-			spaceId: memory.spaceId,
 			similarity,
 		})
 		.from(memory)

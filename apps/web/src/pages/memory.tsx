@@ -55,10 +55,14 @@ export const MemoryPage = () => {
 										</p>
 									</div>
 									<div>
-										<h4 className="font-semibold">Space</h4>
-										<Badge variant="secondary">
-											{currentMemory.space.name}
-										</Badge>
+										<h4 className="font-semibold">Spaces</h4>
+										<div className="flex flex-wrap gap-2 mt-1">
+											{currentMemory.spaces.map((space) => (
+												<Badge key={space.id} variant="secondary">
+													{space.name}
+												</Badge>
+											))}
+										</div>
 									</div>
 									{currentMemory.metadata && (
 										<div>

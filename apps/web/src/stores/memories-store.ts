@@ -17,12 +17,12 @@ export interface MemoriesStore {
 	isCreating: boolean;
 	creationStatus: { message: string; type: "success" | "error" } | null;
 	newMemoryContent: string;
-	newMemorySpaceId: string;
+	newMemorySpaceIds: string[];
 	setSearchQuery: (query: string) => void;
 	setSelectedSpaceIds: (spaceIds: string[]) => void;
 	setSortOrder: (order: "asc" | "desc") => void;
 	setNewMemoryContent: (content: string) => void;
-	setNewMemorySpaceId: (spaceId: string) => void;
+	setNewMemorySpaceIds: (spaceIds: string[]) => void;
 	fetchSpaces: () => Promise<void>;
 	fetchData: (params: {
 		spaceIds: string[];
@@ -59,7 +59,7 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 	isCreating: false,
 	creationStatus: null,
 	newMemoryContent: "",
-	newMemorySpaceId: "",
+	newMemorySpaceIds: [],
 
 	setSearchQuery: (query) =>
 		set(
@@ -89,10 +89,10 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 			}),
 		),
 
-	setNewMemorySpaceId: (spaceId) =>
+	setNewMemorySpaceIds: (spaceIds) =>
 		set(
 			produce((state) => {
-				state.newMemorySpaceId = spaceId;
+				state.newMemorySpaceIds = spaceIds;
 			}),
 		),
 
@@ -130,8 +130,11 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 				limit: String(limit),
 				offset: String(offset),
 				sortOrder: sortOrder || useMemoriesStore.getState().sortOrder,
-				...(spaceIds.length > 0 && { spaceId: spaceIds.join(",") }),
 			});
+
+			if (spaceIds.length > 0) {
+				spaceIds.forEach((id) => searchParams.append("spaceId", id));
+			}
 
 			const response = await fetchWithAuth(
 				`${API_ENDPOINTS.MEMORIES}?${searchParams}`,
@@ -219,9 +222,9 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 	},
 
 	createMemory: async () => {
-		const { newMemoryContent, newMemorySpaceId, memories } =
+		const { newMemoryContent, newMemorySpaceIds, memories } =
 			useMemoriesStore.getState();
-		if (!newMemoryContent.trim() || !newMemorySpaceId) return;
+		if (!newMemoryContent.trim() || newMemorySpaceIds.length === 0) return;
 
 		set(
 			produce((state) => {
@@ -235,7 +238,7 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 				method: "POST",
 				body: JSON.stringify({
 					content: newMemoryContent,
-					spaceId: newMemorySpaceId,
+					spaceIds: newMemorySpaceIds,
 				}),
 			});
 

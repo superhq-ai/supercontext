@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createMemorySchema = z.object({
 	content: z.string().min(1),
-	spaceId: z.string().min(1),
+	spaceIds: z.array(z.string().min(1)),
 	metadata: z.record(z.any()).optional(),
 });
 
