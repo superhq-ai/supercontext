@@ -10,7 +10,7 @@ import {
 	timestamp,
 	vector,
 } from "drizzle-orm/pg-core";
-import { EMBEDDING_DIMENSIONS } from "@/lib/embedding-dim";
+import { EMBEDDING_DIMENSIONS } from "@/constants";
 
 export const roleEnum = pgEnum("role", ["admin", "user"]);
 

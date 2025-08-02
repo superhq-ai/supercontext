@@ -20,7 +20,7 @@ class GoogleGeminiEmbeddingProvider implements EmbeddingProvider {
 			model: "gemini-embedding-001",
 			contents: [content],
 			config: {
-				outputDimensionality: 768,
+				outputDimensionality: 1536,
 			},
 		});
 
@@ -64,8 +64,8 @@ class MockEmbeddingProvider implements EmbeddingProvider {
 }
 
 function getEmbeddingProvider(): EmbeddingProvider {
-	if (env.GOOGLE_API_KEY) {
-		return new GoogleGeminiEmbeddingProvider(env.GOOGLE_API_KEY);
+	if (env.GEMINI_API_KEY) {
+		return new GoogleGeminiEmbeddingProvider(env.GEMINI_API_KEY);
 	}
 	if (env.OPENAI_API_KEY) {
 		return new OpenAIEmbeddingProvider(env.OPENAI_API_KEY);
