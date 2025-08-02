@@ -9,13 +9,16 @@
 		"start": "NODE_ENV=production bun dist/server.js",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
-		"admin:create": "bun src/scripts/create-admin.ts"
+		"admin:create": "bun src/scripts/create-admin.ts",
+		"admin:create-api-key": "bun src/scripts/create-api-key.ts"
 	},
 	"dependencies": {
+		"@google/genai": "^1.12.0",
 		"@hono/zod-validator": "^0.7.2",
 		"better-auth": "^1.3.4",
 		"drizzle-orm": "^0.31.2",
 		"hono": "^4.8.5",
+		"openai": "^5.11.0",
 		"postgres": "^3.4.4",
 		"zod": "^3.23.8"
 	},

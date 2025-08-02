@@ -28,17 +28,22 @@ export const auth = (options: AuthOptions = {}) =>
 			// 1. Try API key authentication if allowed
 			if (allowApiKey) {
 				const authHeader = c.req.header("Authorization");
+				console.log("Authorization Header:", authHeader);
 				if (authHeader?.startsWith("Bearer ")) {
 					const token = authHeader.replace("Bearer ", "");
+					console.log("API Key Token:", token);
 					const hashedKey = crypto
 						.createHash("sha256")
 						.update(token)
 						.digest("hex");
+					console.log("Hashed API Key:", hashedKey);
 					const [keyRecord] = await db
 						.select()
 						.from(apiKey)
 						.where(eq(apiKey.key, hashedKey))
 						.limit(1);
+
+					console.log("Key Record:", keyRecord);
 
 					if (keyRecord) {
 						c.set("apiKey", keyRecord);

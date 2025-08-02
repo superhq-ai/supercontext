@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { getUserId } from "@/lib/get-user-id";
 import { getSpaceWithAccess } from "../spaces/services";
 import {
 	createMemory,
@@ -7,13 +8,8 @@ import {
 	getMemory,
 	listMemories,
 	searchMemories,
-	updateMemory,
 } from "./services";
-import {
-	createMemorySchema,
-	searchMemoriesSchema,
-	updateMemorySchema,
-} from "./validators";
+import { createMemorySchema, searchMemoriesSchema } from "./validators";
 
 // A helper to check if the user or API key has access to the space
 async function checkSpaceAccess(c: Context, spaceId: string) {
@@ -37,9 +33,7 @@ async function checkSpaceAccess(c: Context, spaceId: string) {
 }
 
 export async function handleCreateMemory(c: Context) {
-	const user = c.get("user");
-	if (!user) throw new HTTPException(401, { message: "Unauthorized" });
-
+	const userId = getUserId(c);
 	const body = await c.req.json();
 	const parse = createMemorySchema.safeParse(body);
 	if (!parse.success) {
@@ -51,7 +45,7 @@ export async function handleCreateMemory(c: Context) {
 		throw new HTTPException(403, { message: "Forbidden" });
 	}
 
-	const memory = await createMemory({ ...parse.data, userId: user.id });
+	const memory = await createMemory({ ...parse.data, userId });
 	return c.json(memory, 201);
 }
 
@@ -99,28 +93,6 @@ export async function handleSearchMemories(c: Context) {
 
 	const results = await searchMemories(parse.data);
 	return c.json(results);
-}
-
-export async function handleUpdateMemory(c: Context) {
-	const memoryId = c.req.param("memoryId");
-	const memory = await getMemory(memoryId);
-	if (!memory) {
-		throw new HTTPException(404, { message: "Memory not found" });
-	}
-
-	const hasAccess = await checkSpaceAccess(c, memory.spaceId);
-	if (!hasAccess) {
-		throw new HTTPException(403, { message: "Forbidden" });
-	}
-
-	const body = await c.req.json();
-	const parse = updateMemorySchema.safeParse(body);
-	if (!parse.success) {
-		return c.json({ error: "Invalid input", details: parse.error.errors }, 400);
-	}
-
-	const updated = await updateMemory({ memoryId, ...parse.data });
-	return c.json(updated);
 }
 
 export async function handleDeleteMemory(c: Context) {

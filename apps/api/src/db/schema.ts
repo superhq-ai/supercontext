@@ -1,5 +1,7 @@
+import { relations } from "drizzle-orm";
 import {
 	boolean,
+	index,
 	jsonb,
 	pgEnum,
 	pgTable,
@@ -8,7 +10,7 @@ import {
 	timestamp,
 	vector,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm/relations";
+import { EMBEDDING_DIMENSIONS } from "@/lib/embedding-dim";
 
 export const roleEnum = pgEnum("role", ["admin", "user"]);
 
@@ -122,30 +124,39 @@ export const apiKey = pgTable("api_key", {
 	lastUsedAt: timestamp("last_used_at"),
 });
 
-// Memories table
-export const memory = pgTable("memory", {
-	id: text("id").primaryKey(),
-	content: text("content").notNull(),
-	embedding: vector("embedding", {
-		dimensions: parseInt(process.env.EMBEDDING_DIMENSIONS || "1536"),
-	}).notNull(),
-	metadata: jsonb("metadata"),
-	spaceId: text("space_id")
-		.notNull()
-		.references(() => space.id, { onDelete: "cascade" }),
-	userId: text("user_id")
-		.notNull()
-		.references(() => user.id, { onDelete: "restrict" }),
-	apiKeyId: text("api_key_id").references(() => apiKey.id, {
-		onDelete: "set null",
+// Memory table
+export const memory = pgTable(
+	"memory",
+	{
+		id: text("id").primaryKey(),
+		content: text("content").notNull(),
+		embedding: vector("embedding", {
+			dimensions: EMBEDDING_DIMENSIONS,
+		}).notNull(),
+		metadata: jsonb("metadata"),
+		spaceId: text("space_id")
+			.notNull()
+			.references(() => space.id, { onDelete: "cascade" }),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "restrict" }),
+		apiKeyId: text("api_key_id").references(() => apiKey.id, {
+			onDelete: "set null",
+		}),
+		createdAt: timestamp("created_at")
+			.$defaultFn(() => new Date())
+			.notNull(),
+		updatedAt: timestamp("updated_at")
+			.$defaultFn(() => new Date())
+			.notNull(),
+	},
+	(table) => ({
+		memoryEmbeddingIndex: index("memoryEmbeddingIndex").using(
+			"hnsw",
+			table.embedding.op("vector_cosine_ops"),
+		),
 	}),
-	createdAt: timestamp("created_at")
-		.$defaultFn(() => new Date())
-		.notNull(),
-	updatedAt: timestamp("updated_at")
-		.$defaultFn(() => new Date())
-		.notNull(),
-});
+);
 
 // Relations for better query support
 export const spaceRelations = relations(space, ({ many }) => ({

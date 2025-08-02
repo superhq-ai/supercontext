@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 
+import { getUserId } from "@/lib/get-user-id";
 import {
 	addUserToSpace,
 	createSpace,
@@ -31,11 +32,9 @@ export async function handleCreateSpace(c: Context) {
 }
 
 export async function handleGetSpace(c: Context) {
-	const user = c.get("user");
-	if (!user) throw new HTTPException(401, { message: "Unauthorized" });
-
+	const userId = getUserId(c);
 	const spaceId = c.req.param("spaceId");
-	const space = await getSpaceWithAccess({ spaceId, userId: user.id });
+	const space = await getSpaceWithAccess({ spaceId, userId });
 	if (!space)
 		throw new HTTPException(404, {
 			message: "Space not found or access denied",
@@ -44,9 +43,8 @@ export async function handleGetSpace(c: Context) {
 }
 
 export async function handleListSpaces(c: Context) {
-	const user = c.get("user");
-	if (!user) throw new HTTPException(401, { message: "Unauthorized" });
-	const spaces = await listSpacesForUser(user.id);
+	const userId = getUserId(c);
+	const spaces = await listSpacesForUser(userId);
 	return c.json(spaces);
 }
 

@@ -1,8 +1,8 @@
 import crypto from "node:crypto";
-import { eq, type SQL, sql } from "drizzle-orm";
+import { cosineDistance, desc, eq, gt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { memory } from "@/db/schema";
-import { generateEmbedding } from "./utils";
+import { generateEmbedding } from "@/lib/embedding";
 
 export type CreateMemoryInput = {
 	content: string;
@@ -22,6 +22,8 @@ export async function createMemory({
 	const embedding = await generateEmbedding(content);
 	const id = crypto.randomUUID();
 
+	console.log(embedding);
+
 	const [created] = await db
 		.insert(memory)
 		.values({
@@ -31,7 +33,7 @@ export async function createMemory({
 			metadata,
 			userId,
 			apiKeyId,
-			embedding: sql`[${embedding.join(",")}]`,
+			embedding,
 		})
 		.returning();
 
@@ -63,18 +65,18 @@ export async function searchMemories({
 	limit = 10,
 }: SearchMemoriesInput) {
 	const queryEmbedding = await generateEmbedding(query);
-	const queryEmbeddingSql = sql`[${queryEmbedding.join(",")}]`;
+	const similarity = sql<number>`1 - (${cosineDistance(memory.embedding, queryEmbedding)})`;
 
 	const results = await db
 		.select({
 			id: memory.id,
 			content: memory.content,
 			metadata: memory.metadata,
-			similarity: sql<number>`1 - (embedding <=> ${queryEmbeddingSql})`,
+			similarity,
 		})
 		.from(memory)
-		.where(eq(memory.spaceId, spaceId))
-		.orderBy(sql`embedding <=> ${queryEmbeddingSql}`)
+		.where(sql`${eq(memory.spaceId, spaceId)} AND ${gt(similarity, 0.5)}`)
+		.orderBy((t) => desc(t.similarity))
 		.limit(limit);
 
 	return results;
@@ -85,32 +87,6 @@ export type UpdateMemoryInput = {
 	content?: string;
 	metadata?: object;
 };
-
-export async function updateMemory({
-	memoryId,
-	content,
-	metadata,
-}: UpdateMemoryInput) {
-	const data: Omit<Partial<typeof memory.$inferInsert>, "embedding"> & {
-		embedding?: SQL;
-	} = {};
-
-	if (content) {
-		data.content = content;
-		data.embedding = sql`[${(await generateEmbedding(content)).join(",")}]`;
-	}
-	if (metadata) {
-		data.metadata = metadata;
-	}
-
-	const [updated] = await db
-		.update(memory)
-		.set(data)
-		.where(eq(memory.id, memoryId))
-		.returning();
-
-	return updated;
-}
 
 export async function deleteMemory(memoryId: string) {
 	const result = await db

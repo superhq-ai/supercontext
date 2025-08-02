@@ -1,5 +1,6 @@
 import prompts from "prompts";
 import { auth } from "@/lib/auth";
+import { createSpace } from "@/routes/spaces/services";
 
 async function main() {
 	const name = await prompts({
@@ -17,13 +18,27 @@ async function main() {
 		name: "value",
 		message: "Enter password:",
 	});
-	await auth.api.signUpEmail({
+	const {
+		user: { id: userId },
+	} = await auth.api.signUpEmail({
 		body: {
 			name: name.value,
 			email: email.value,
 			password: password.value,
 		},
 	});
+
+	const defaultSpace = await createSpace({
+		name: "Default Space",
+		createdBy: userId,
+	});
+
+	if (!defaultSpace) {
+		throw new Error("Failed to create default space");
+	}
+
+	console.log(`Admin user created with ID: ${userId}`);
+	console.log(`Default space created with ID: ${defaultSpace.id}`);
 }
 
 main()
