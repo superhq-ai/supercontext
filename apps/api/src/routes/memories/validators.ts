@@ -14,7 +14,7 @@ export const searchMemoriesSchema = z.object({
 });
 
 export const listMemoriesSchema = z.object({
-	spaceId: z.string().min(1),
+	spaceId: z.string().min(1).optional(),
 	limit: z.number().int().positive().optional(),
 	offset: z.number().int().nonnegative().optional(),
 });

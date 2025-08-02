@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { cosineDistance, desc, eq, gt, sql } from "drizzle-orm";
+import { cosineDistance, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { memory } from "@/db/schema";
 import { generateEmbedding } from "@/lib/embedding";
@@ -50,18 +50,34 @@ export async function getMemory(memoryId: string) {
 }
 
 export async function listMemories(spaceId: string, limit = 50, offset = 0) {
+	let spaceIds: string[];
+
+	if (!spaceId) {
+		const spaces = await db
+			.select({ id: memory.spaceId })
+			.from(memory)
+			.groupBy(memory.spaceId);
+		spaceIds = spaces.map((s) => s.id);
+	} else {
+		spaceIds = [spaceId];
+	}
+
+	if (spaceIds.length === 0) {
+		return { memories: [], pagination: { limit, offset, total: 0 } };
+	}
+
 	const memories = await db
 		.select()
 		.from(memory)
-		.where(eq(memory.spaceId, spaceId))
+		.where(inArray(memory.spaceId, spaceIds))
 		.limit(limit)
 		.offset(offset);
-	
+
 	const total = await db
 		.select({ count: sql<number>`count(*)` })
 		.from(memory)
-		.where(eq(memory.spaceId, spaceId));
-	
+		.where(inArray(memory.spaceId, spaceIds));
+
 	return {
 		memories,
 		pagination: {
