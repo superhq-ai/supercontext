@@ -1,6 +1,5 @@
 import { createProtectedRouter } from "@/lib/create-app";
-import { requireAdmin } from "@/middlewares/require-admin";
-import { requireApiKey } from "@/middlewares/require-api-key";
+import { auth } from "@/middlewares/auth";
 import {
 	handleAddUserToSpace,
 	handleCreateSpace,
@@ -13,16 +12,19 @@ import {
 
 const router = createProtectedRouter();
 
-router.use("*", requireApiKey);
-router.post("/", handleCreateSpace);
-router.get("/", handleListSpaces);
-router.get("/:spaceId", handleGetSpace);
-router.patch("/:spaceId", requireAdmin, handleUpdateSpace);
-router.delete("/:spaceId", requireAdmin, handleDeleteSpace);
-router.post("/:spaceId/users", requireAdmin, handleAddUserToSpace);
+router.get("/", auth(), handleListSpaces);
+router.get("/:spaceId", auth(), handleGetSpace);
+router.post("/", auth({ requireAdmin: true }), handleCreateSpace);
+router.patch("/:spaceId", auth({ requireAdmin: true }), handleUpdateSpace);
+router.delete("/:spaceId", auth({ requireAdmin: true }), handleDeleteSpace);
+router.post(
+	"/:spaceId/users",
+	auth({ requireAdmin: true }),
+	handleAddUserToSpace,
+);
 router.delete(
 	"/:spaceId/users/:userId",
-	requireAdmin,
+	auth({ requireAdmin: true }),
 	handleRemoveUserFromSpace,
 );
 
