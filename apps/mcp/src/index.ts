@@ -11,7 +11,7 @@ type ApiOptions<T> = {
 async function callApi<T>(options: ApiOptions<T>): Promise<string> {
 	const { path, method, apiKey, body } = options;
 
-	const apiUrl = process.env.API_URL || "http://localhost:3000";
+	const apiUrl = process.env.API_URL || "http://localhost:3001";
 	const response = await fetch(`${apiUrl}${path}`, {
 		method,
 		headers: {
