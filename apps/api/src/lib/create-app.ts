@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { requireAuth } from "@/middlewares/require-auth";
 import type { AppVariables, ProtectedAppVariables } from "@/types";
 
 export const createRouter = () => {
@@ -9,7 +8,6 @@ export const createRouter = () => {
 
 export const createProtectedRouter = () => {
 	const router = new Hono<{ Variables: ProtectedAppVariables }>();
-	router.use("*", requireAuth);
 	return router;
 };
 
