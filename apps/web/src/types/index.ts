@@ -1,6 +1,7 @@
 export interface Memory {
 	id: string;
 	content: string;
+	space: Space;
 	metadata?: Record<string, unknown>;
 	createdAt: string;
 	updatedAt: string;

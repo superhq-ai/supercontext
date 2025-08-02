@@ -6,6 +6,7 @@ import type { Memory, PaginationInfo, SortOrder, Space } from "@/types";
 
 export interface MemoriesStore {
 	memories: Memory[];
+	currentMemory: Memory | null;
 	pagination: PaginationInfo;
 	searchQuery: string;
 	isLoading: boolean;
@@ -38,10 +39,12 @@ export interface MemoriesStore {
 		offset?: number;
 		sortOrder?: SortOrder;
 	}) => Promise<void>;
+	fetchMemoryById: (id: string) => Promise<void>;
 }
 
 export const useMemoriesStore = create<MemoriesStore>((set) => ({
 	memories: [],
+	currentMemory: null,
 	pagination: {
 		limit: DEFAULT_PAGINATION.LIMIT,
 		offset: DEFAULT_PAGINATION.OFFSET,
@@ -270,6 +273,40 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 			set(
 				produce((state) => {
 					state.isCreating = false;
+				}),
+			);
+		}
+	},
+
+	fetchMemoryById: async (id) => {
+		set(
+			produce((state) => {
+				state.isLoading = true;
+				state.error = null;
+			}),
+		);
+
+		try {
+			const response = await fetchWithAuth(`${API_ENDPOINTS.MEMORIES}/${id}`);
+			if (!response.ok) throw new Error("Failed to fetch memory");
+			const data: Memory = await response.json();
+			set(
+				produce((state) => {
+					state.currentMemory = data;
+				}),
+			);
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : "An unexpected error occurred";
+			set(
+				produce((state) => {
+					state.error = errorMessage;
+				}),
+			);
+		} finally {
+			set(
+				produce((state) => {
+					state.isLoading = false;
 				}),
 			);
 		}

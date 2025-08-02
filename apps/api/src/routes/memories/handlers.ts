@@ -60,7 +60,10 @@ export async function handleGetMemory(c: Context) {
 		throw new HTTPException(404, { message: "Memory not found" });
 	}
 
-	const hasAccess = await checkSpaceAccess(c, memory.spaceId);
+	if (!memory.space) {
+		throw new HTTPException(404, { message: "Space not found for memory" });
+	}
+	const hasAccess = await checkSpaceAccess(c, memory.space.id);
 	if (!hasAccess) {
 		throw new HTTPException(403, { message: "Forbidden" });
 	}
@@ -130,7 +133,10 @@ export async function handleDeleteMemory(c: Context) {
 		throw new HTTPException(404, { message: "Memory not found" });
 	}
 
-	const hasAccess = await checkSpaceAccess(c, memory.spaceId);
+	if (!memory.space) {
+		throw new HTTPException(404, { message: "Space not found for memory" });
+	}
+	const hasAccess = await checkSpaceAccess(c, memory.space.id);
 	if (!hasAccess) {
 		throw new HTTPException(403, { message: "Forbidden" });
 	}

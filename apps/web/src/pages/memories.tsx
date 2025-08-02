@@ -1,5 +1,6 @@
 import { Filter, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router";
 import { Navigation } from "@/components/navigation";
 import { Pagination } from "@/components/pagination";
 import { SpaceSelector } from "@/components/space-selector";
@@ -388,34 +389,46 @@ export function MemoriesPage() {
 							!error && (
 								<>
 									{memories.map((memory) => (
-										<Card key={memory.id}>
-											<CardHeader>
-												<div className="flex justify-between items-start">
-													<CardTitle className="text-lg">
-														Memory {memory.id.slice(0, 8)}...
-													</CardTitle>
-													<div className="flex gap-2">
-														{memory.similarity && (
-															<Badge variant="secondary">
-																{Math.round(memory.similarity * 100)}% match
+										<Link
+											to={`/memories/${memory.id}`}
+											key={memory.id}
+											className="block"
+										>
+											<Card>
+												<CardHeader>
+													<div className="flex justify-between items-start">
+														<CardTitle className="text-lg">
+															Memory {memory.id.slice(0, 8)}...
+														</CardTitle>
+														<div className="flex gap-2">
+															{memory.similarity && (
+																<Badge variant="secondary">
+																	{Math.round(memory.similarity * 100)}% match
+																</Badge>
+															)}
+															<Badge variant="outline">
+																{new Date(
+																	memory.createdAt,
+																).toLocaleDateString()}
 															</Badge>
-														)}
-														<Badge variant="outline">
-															{new Date(memory.createdAt).toLocaleDateString()}
-														</Badge>
+														</div>
 													</div>
-												</div>
-											</CardHeader>
-											<CardContent>
-												<p className="text-foreground mb-4">{memory.content}</p>
-												{memory.metadata && (
-													<div className="text-sm text-muted-foreground">
-														<strong>Metadata:</strong>{" "}
-														{JSON.stringify(memory.metadata)}
-													</div>
-												)}
-											</CardContent>
-										</Card>
+												</CardHeader>
+												<CardContent>
+													<p className="text-foreground mb-4">
+														{memory.content.length > 100
+															? `${memory.content.slice(0, 100)}...`
+															: memory.content}
+													</p>
+													{memory.metadata && (
+														<div className="text-sm text-muted-foreground">
+															<strong>Metadata:</strong>{" "}
+															{JSON.stringify(memory.metadata)}
+														</div>
+													)}
+												</CardContent>
+											</Card>
+										</Link>
 									))}
 									<Pagination
 										currentPage={currentPage}

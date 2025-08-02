@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { cosineDistance, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { memory } from "@/db/schema";
+import { memory, space } from "@/db/schema";
 import { generateEmbedding } from "@/lib/embedding";
 
 export type CreateMemoryInput = {
@@ -42,8 +42,18 @@ export async function createMemory({
 
 export async function getMemory(memoryId: string) {
 	const [found] = await db
-		.select()
+		.select({
+			id: memory.id,
+			content: memory.content,
+			metadata: memory.metadata,
+			createdAt: memory.createdAt,
+			space: {
+				id: space.id,
+				name: space.name,
+			},
+		})
 		.from(memory)
+		.leftJoin(space, eq(memory.spaceId, space.id))
 		.where(eq(memory.id, memoryId))
 		.limit(1);
 	return found;
