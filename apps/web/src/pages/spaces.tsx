@@ -22,7 +22,7 @@ interface Space {
 }
 
 export function SpacesPage() {
-	const { session, user } = useAuth();
+	const { user } = useAuth();
 	const [spaces, setSpaces] = useState<Space[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isCreating, setIsCreating] = useState(false);
@@ -32,7 +32,7 @@ export function SpacesPage() {
 	const fetchSpaces = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetchWithAuth("/api/spaces", session?.token);
+			const response = await fetchWithAuth("/api/spaces");
 
 			if (response.ok) {
 				const data = await response.json();
@@ -43,14 +43,14 @@ export function SpacesPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	}, [session?.token]);
+	}, []);
 
 	const createSpace = async () => {
 		if (!newSpaceName.trim()) return;
 
 		setIsCreating(true);
 		try {
-			const response = await fetchWithAuth("/api/spaces", session?.token, {
+			const response = await fetchWithAuth("/api/spaces", {
 				method: "POST",
 				body: JSON.stringify({
 					name: newSpaceName,
@@ -81,13 +81,9 @@ export function SpacesPage() {
 		}
 
 		try {
-			const response = await fetchWithAuth(
-				`/api/spaces/${spaceId}`,
-				session?.token,
-				{
-					method: "DELETE",
-				},
-			);
+			const response = await fetchWithAuth(`/api/spaces/${spaceId}`, {
+				method: "DELETE",
+			});
 
 			if (response.ok) {
 				setSpaces(spaces.filter((space) => space.id !== spaceId));

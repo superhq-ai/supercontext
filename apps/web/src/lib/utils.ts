@@ -5,20 +5,24 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export async function fetchWithAuth(
-	path: string,
-	token: string | undefined,
-	options: RequestInit = {},
-) {
+export async function fetchWithAuth(path: string, options: RequestInit = {}) {
 	const { headers, ...restOptions } = options;
-	const newOptions = {
+	const newOptions: RequestInit = {
 		...restOptions,
 		headers: {
 			...headers,
 			"Content-Type": "application/json",
-			Authorization: `Bearer ${token}`,
 		},
+		credentials: "include",
 	};
+
+	console.log(
+		"Fetching:",
+		path,
+		"with options:",
+		newOptions,
+		import.meta.env.VITE_API_URL,
+	);
 
 	const response = await fetch(
 		`${import.meta.env.VITE_API_URL}${path}`,

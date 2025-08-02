@@ -10,7 +10,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/contexts/auth-context";
 import { fetchWithAuth } from "@/lib/utils";
 
 interface ApiKey {
@@ -24,7 +23,6 @@ interface ApiKey {
 }
 
 export function ApiKeysPage() {
-	const { session } = useAuth();
 	const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isCreating, setIsCreating] = useState(false);
@@ -34,7 +32,7 @@ export function ApiKeysPage() {
 	const fetchApiKeys = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetchWithAuth("/api/api-keys", session?.token);
+			const response = await fetchWithAuth("/api/api-keys");
 
 			if (response.ok) {
 				const data = await response.json();
@@ -45,14 +43,14 @@ export function ApiKeysPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	}, [session?.token]);
+	}, []);
 
 	const createApiKey = async () => {
 		if (!newKeyName.trim()) return;
 
 		setIsCreating(true);
 		try {
-			const response = await fetchWithAuth("/api/api-keys", session?.token, {
+			const response = await fetchWithAuth("/api/api-keys", {
 				method: "POST",
 				body: JSON.stringify({
 					name: newKeyName,
@@ -75,13 +73,9 @@ export function ApiKeysPage() {
 
 	const revokeApiKey = async (apiKeyId: string) => {
 		try {
-			const response = await fetchWithAuth(
-				`/api/api-keys/${apiKeyId}/revoke`,
-				session?.token,
-				{
-					method: "PATCH",
-				},
-			);
+			const response = await fetchWithAuth(`/api/api-keys/${apiKeyId}/revoke`, {
+				method: "PATCH",
+			});
 
 			if (response.ok) {
 				setApiKeys(
@@ -105,13 +99,9 @@ export function ApiKeysPage() {
 		}
 
 		try {
-			const response = await fetchWithAuth(
-				`/api/api-keys/${apiKeyId}`,
-				session?.token,
-				{
-					method: "DELETE",
-				},
-			);
+			const response = await fetchWithAuth(`/api/api-keys/${apiKeyId}`, {
+				method: "DELETE",
+			});
 
 			if (response.ok) {
 				setApiKeys(apiKeys.filter((key) => key.id !== apiKeyId));

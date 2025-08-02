@@ -47,7 +47,7 @@ app.get("/health", (c) =>
 );
 app.route("/api/auth", authRouter);
 
-app.route("/users", usersRouter);
-app.route("/spaces", spacesRouter);
-app.route("/api-keys", apiKeyRouter);
-app.route("/memories", memoryRouter);
+app.route("/api/users", usersRouter);
+app.route("/api/spaces", spacesRouter);
+app.route("/api/api-keys", apiKeyRouter);
+app.route("/api/memories", memoryRouter);

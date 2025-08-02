@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/contexts/auth-context";
 import { fetchWithAuth } from "@/lib/utils";
 
 interface Memory {
@@ -40,7 +39,6 @@ interface SearchResponse {
 }
 
 export function MemoriesPage() {
-	const { session } = useAuth();
 	const [memories, setMemories] = useState<Memory[]>([]);
 	const [searchResults, setSearchResults] = useState<
 		Array<Memory & { similarity: number }>
@@ -73,7 +71,6 @@ export function MemoriesPage() {
 			try {
 				const response = await fetchWithAuth(
 					`/api/memories?spaceId=${spaceId}&limit=${limit}&offset=${offset}`,
-					session?.token,
 				);
 
 				if (response.ok) {
@@ -87,7 +84,7 @@ export function MemoriesPage() {
 				setIsLoading(false);
 			}
 		},
-		[session?.token],
+		[],
 	);
 
 	const searchMemories = useCallback(
@@ -96,19 +93,15 @@ export function MemoriesPage() {
 
 			setIsSearching(true);
 			try {
-				const response = await fetchWithAuth(
-					"/api/memories/search",
-					session?.token,
-					{
-						method: "POST",
-						body: JSON.stringify({
-							query,
-							spaceId,
-							limit,
-							offset,
-						}),
-					},
-				);
+				const response = await fetchWithAuth("/api/memories/search", {
+					method: "POST",
+					body: JSON.stringify({
+						query,
+						spaceId,
+						limit,
+						offset,
+					}),
+				});
 
 				if (response.ok) {
 					const data: SearchResponse = await response.json();
@@ -121,7 +114,7 @@ export function MemoriesPage() {
 				setIsSearching(false);
 			}
 		},
-		[session?.token],
+		[],
 	);
 
 	const createMemory = async () => {
@@ -129,7 +122,7 @@ export function MemoriesPage() {
 
 		setIsCreating(true);
 		try {
-			const response = await fetchWithAuth("/api/memories", session?.token, {
+			const response = await fetchWithAuth("/api/memories", {
 				method: "POST",
 				body: JSON.stringify({
 					content: newMemoryContent,
