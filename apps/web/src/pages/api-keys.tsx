@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/auth-context";
+import { useEffect, useState } from "react";
+import { Navigation } from "@/components/navigation";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
 	Card,
 	CardContent,
@@ -9,8 +9,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Navigation } from "@/components/navigation";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/auth-context";
 
 interface ApiKey {
 	id: string;
@@ -35,10 +35,10 @@ export function ApiKeysPage() {
 		try {
 			const response = await fetch("/api/api-keys", {
 				headers: {
-					Authorization: `Bearer ${session?.accessToken}`,
+					Authorization: `Bearer ${session?.token}`,
 				},
 			});
-			
+
 			if (response.ok) {
 				const data = await response.json();
 				setApiKeys(data);
@@ -52,21 +52,21 @@ export function ApiKeysPage() {
 
 	const createApiKey = async () => {
 		if (!newKeyName.trim()) return;
-		
+
 		setIsCreating(true);
 		try {
 			const response = await fetch("/api/api-keys", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Authorization: `Bearer ${session?.accessToken}`,
+					Authorization: `Bearer ${session?.token}`,
 				},
 				body: JSON.stringify({
 					name: newKeyName,
 					spaceId: newKeySpaceId || undefined,
 				}),
 			});
-			
+
 			if (response.ok) {
 				const newApiKey = await response.json();
 				setApiKeys([...apiKeys, newApiKey]);
@@ -85,14 +85,16 @@ export function ApiKeysPage() {
 			const response = await fetch(`/api/api-keys/${apiKeyId}/revoke`, {
 				method: "PATCH",
 				headers: {
-					Authorization: `Bearer ${session?.accessToken}`,
+					Authorization: `Bearer ${session?.token}`,
 				},
 			});
-			
+
 			if (response.ok) {
-				setApiKeys(apiKeys.map(key => 
-					key.id === apiKeyId ? { ...key, status: "revoked" } : key
-				));
+				setApiKeys(
+					apiKeys.map((key) =>
+						key.id === apiKeyId ? { ...key, status: "revoked" } : key,
+					),
+				);
 			}
 		} catch (error) {
 			console.error("Failed to revoke API key:", error);
@@ -100,20 +102,24 @@ export function ApiKeysPage() {
 	};
 
 	const deleteApiKey = async (apiKeyId: string) => {
-		if (!confirm("Are you sure you want to delete this API key? This action cannot be undone.")) {
+		if (
+			!confirm(
+				"Are you sure you want to delete this API key? This action cannot be undone.",
+			)
+		) {
 			return;
 		}
-		
+
 		try {
 			const response = await fetch(`/api/api-keys/${apiKeyId}`, {
 				method: "DELETE",
 				headers: {
-					Authorization: `Bearer ${session?.accessToken}`,
+					Authorization: `Bearer ${session?.token}`,
 				},
 			});
-			
+
 			if (response.ok) {
-				setApiKeys(apiKeys.filter(key => key.id !== apiKeyId));
+				setApiKeys(apiKeys.filter((key) => key.id !== apiKeyId));
 			}
 		} catch (error) {
 			console.error("Failed to delete API key:", error);
@@ -171,8 +177,8 @@ export function ApiKeysPage() {
 										className="mt-1"
 									/>
 								</div>
-								<Button 
-									onClick={createApiKey} 
+								<Button
+									onClick={createApiKey}
 									disabled={isCreating || !newKeyName.trim()}
 								>
 									{isCreating ? "Creating..." : "Create API Key"}
@@ -205,7 +211,11 @@ export function ApiKeysPage() {
 												</CardDescription>
 											</div>
 											<div className="flex gap-2">
-												<Badge variant={apiKey.status === "active" ? "default" : "secondary"}>
+												<Badge
+													variant={
+														apiKey.status === "active" ? "default" : "secondary"
+													}
+												>
 													{apiKey.status === "active" ? "Active" : "Revoked"}
 												</Badge>
 												{apiKey.status === "active" ? (
@@ -231,11 +241,13 @@ export function ApiKeysPage() {
 									<CardContent>
 										<div className="space-y-2 text-sm text-muted-foreground">
 											<div>
-												<strong>Created:</strong> {new Date(apiKey.createdAt).toLocaleDateString()}
+												<strong>Created:</strong>{" "}
+												{new Date(apiKey.createdAt).toLocaleDateString()}
 											</div>
 											{apiKey.lastUsedAt && (
 												<div>
-													<strong>Last Used:</strong> {new Date(apiKey.lastUsedAt).toLocaleDateString()}
+													<strong>Last Used:</strong>{" "}
+													{new Date(apiKey.lastUsedAt).toLocaleDateString()}
 												</div>
 											)}
 											{apiKey.spaceId && (
@@ -253,4 +265,4 @@ export function ApiKeysPage() {
 			</main>
 		</div>
 	);
-} 
+}

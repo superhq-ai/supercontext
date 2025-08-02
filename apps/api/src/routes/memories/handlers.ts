@@ -9,7 +9,11 @@ import {
 	listMemories,
 	searchMemories,
 } from "./services";
-import { createMemorySchema, searchMemoriesSchema, listMemoriesSchema } from "./validators";
+import {
+	createMemorySchema,
+	listMemoriesSchema,
+	searchMemoriesSchema,
+} from "./validators";
 
 // A helper to check if the user or API key has access to the space
 async function checkSpaceAccess(c: Context, spaceId: string) {
@@ -68,7 +72,7 @@ export async function handleListMemories(c: Context) {
 	const spaceId = c.req.query("spaceId");
 	const limit = parseInt(c.req.query("limit") || "50");
 	const offset = parseInt(c.req.query("offset") || "0");
-	
+
 	if (!spaceId) {
 		return c.json({ error: "spaceId is required" }, 400);
 	}

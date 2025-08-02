@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { signIn, useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
-import { useAuth, signIn } from "@/contexts/auth-context";
 
 export function EmailSignInForm({
 	className,

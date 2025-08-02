@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/auth-context";
+import { useEffect, useState } from "react";
+import { Navigation } from "@/components/navigation";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Card,
 	CardContent,
@@ -10,8 +9,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Navigation } from "@/components/navigation";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/auth-context";
 
 interface Memory {
 	id: string;
@@ -40,8 +40,14 @@ interface SearchResponse {
 export function MemoriesPage() {
 	const { session } = useAuth();
 	const [memories, setMemories] = useState<Memory[]>([]);
-	const [searchResults, setSearchResults] = useState<Array<Memory & { similarity: number }>>([]);
-	const [pagination, setPagination] = useState<PaginationInfo>({ limit: 20, offset: 0, total: 0 });
+	const [searchResults, setSearchResults] = useState<
+		Array<Memory & { similarity: number }>
+	>([]);
+	const [pagination, setPagination] = useState<PaginationInfo>({
+		limit: 20,
+		offset: 0,
+		total: 0,
+	});
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isSearching, setIsSearching] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
@@ -59,15 +65,18 @@ export function MemoriesPage() {
 
 	const fetchMemories = async (spaceId: string, limit = 20, offset = 0) => {
 		if (!spaceId) return;
-		
+
 		setIsLoading(true);
 		try {
-			const response = await fetch(`/api/memories?spaceId=${spaceId}&limit=${limit}&offset=${offset}`, {
-				headers: {
-					Authorization: `Bearer ${session?.accessToken}`,
+			const response = await fetch(
+				`/api/memories?spaceId=${spaceId}&limit=${limit}&offset=${offset}`,
+				{
+					headers: {
+						Authorization: `Bearer ${session?.token}`,
+					},
 				},
-			});
-			
+			);
+
 			if (response.ok) {
 				const data: MemoriesResponse = await response.json();
 				setMemories(data.memories);
@@ -80,16 +89,21 @@ export function MemoriesPage() {
 		}
 	};
 
-	const searchMemories = async (query: string, spaceId: string, limit = 20, offset = 0) => {
+	const searchMemories = async (
+		query: string,
+		spaceId: string,
+		limit = 20,
+		offset = 0,
+	) => {
 		if (!query.trim() || !spaceId) return;
-		
+
 		setIsSearching(true);
 		try {
 			const response = await fetch("/api/memories/search", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Authorization: `Bearer ${session?.accessToken}`,
+					Authorization: `Bearer ${session?.token}`,
 				},
 				body: JSON.stringify({
 					query,
@@ -98,7 +112,7 @@ export function MemoriesPage() {
 					offset,
 				}),
 			});
-			
+
 			if (response.ok) {
 				const data: SearchResponse = await response.json();
 				setSearchResults(data.results);
@@ -113,21 +127,21 @@ export function MemoriesPage() {
 
 	const createMemory = async () => {
 		if (!newMemoryContent.trim() || !newMemorySpaceId) return;
-		
+
 		setIsCreating(true);
 		try {
 			const response = await fetch("/api/memories", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					Authorization: `Bearer ${session?.accessToken}`,
+					Authorization: `Bearer ${session?.token}`,
 				},
 				body: JSON.stringify({
 					content: newMemoryContent,
 					spaceId: newMemorySpaceId,
 				}),
 			});
-			
+
 			if (response.ok) {
 				const newMemory = await response.json();
 				setMemories([newMemory, ...memories]);
@@ -185,9 +199,7 @@ export function MemoriesPage() {
 					<Card className="mb-6">
 						<CardHeader>
 							<CardTitle>Create New Memory</CardTitle>
-							<CardDescription>
-								Add a new memory to your space
-							</CardDescription>
+							<CardDescription>Add a new memory to your space</CardDescription>
 						</CardHeader>
 						<CardContent>
 							<div className="space-y-4">
@@ -214,9 +226,11 @@ export function MemoriesPage() {
 										rows={3}
 									/>
 								</div>
-								<Button 
-									onClick={createMemory} 
-									disabled={isCreating || !newMemoryContent.trim() || !newMemorySpaceId}
+								<Button
+									onClick={createMemory}
+									disabled={
+										isCreating || !newMemoryContent.trim() || !newMemorySpaceId
+									}
 								>
 									{isCreating ? "Creating..." : "Create Memory"}
 								</Button>
@@ -245,8 +259,8 @@ export function MemoriesPage() {
 									{isSearching ? "Searching..." : "Search"}
 								</Button>
 								{searchQuery && (
-									<Button 
-										variant="outline" 
+									<Button
+										variant="outline"
 										onClick={() => {
 											setSearchQuery("");
 											fetchMemories(selectedSpaceId);
@@ -269,7 +283,9 @@ export function MemoriesPage() {
 							<Card>
 								<CardContent className="py-8 text-center">
 									<p className="text-muted-foreground">
-										{searchQuery ? "No memories found matching your search." : "No memories found."}
+										{searchQuery
+											? "No memories found matching your search."
+											: "No memories found."}
 									</p>
 								</CardContent>
 							</Card>
@@ -285,7 +301,8 @@ export function MemoriesPage() {
 												<div className="flex gap-2">
 													{searchQuery && "similarity" in memory && (
 														<Badge variant="secondary">
-															{Math.round((memory as any).similarity * 100)}% match
+															{Math.round((memory as any).similarity * 100)}%
+															match
 														</Badge>
 													)}
 													<Badge variant="outline">
@@ -298,7 +315,8 @@ export function MemoriesPage() {
 											<p className="text-foreground mb-4">{memory.content}</p>
 											{memory.metadata && (
 												<div className="text-sm text-muted-foreground">
-													<strong>Metadata:</strong> {JSON.stringify(memory.metadata)}
+													<strong>Metadata:</strong>{" "}
+													{JSON.stringify(memory.metadata)}
 												</div>
 											)}
 										</CardContent>
@@ -310,20 +328,26 @@ export function MemoriesPage() {
 									<div className="flex justify-center items-center gap-2 mt-6">
 										<Button
 											variant="outline"
-											onClick={() => handlePageChange(pagination.offset - pagination.limit)}
+											onClick={() =>
+												handlePageChange(pagination.offset - pagination.limit)
+											}
 											disabled={pagination.offset === 0}
 										>
 											Previous
 										</Button>
-										
+
 										<span className="text-sm text-muted-foreground">
 											Page {currentPage} of {totalPages}
 										</span>
-										
+
 										<Button
 											variant="outline"
-											onClick={() => handlePageChange(pagination.offset + pagination.limit)}
-											disabled={pagination.offset + pagination.limit >= pagination.total}
+											onClick={() =>
+												handlePageChange(pagination.offset + pagination.limit)
+											}
+											disabled={
+												pagination.offset + pagination.limit >= pagination.total
+											}
 										>
 											Next
 										</Button>
@@ -332,7 +356,12 @@ export function MemoriesPage() {
 
 								{/* Results Summary */}
 								<div className="text-center text-sm text-muted-foreground mt-4">
-									Showing {pagination.offset + 1} to {Math.min(pagination.offset + pagination.limit, pagination.total)} of {pagination.total} memories
+									Showing {pagination.offset + 1} to{" "}
+									{Math.min(
+										pagination.offset + pagination.limit,
+										pagination.total,
+									)}{" "}
+									of {pagination.total} memories
 								</div>
 							</>
 						)}
@@ -341,4 +370,4 @@ export function MemoriesPage() {
 			</main>
 		</div>
 	);
-} 
+}
