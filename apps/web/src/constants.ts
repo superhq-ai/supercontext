@@ -5,7 +5,7 @@ export const API_ENDPOINTS = {
 } as const;
 
 export const DEFAULT_PAGINATION = {
-	LIMIT: 20,
+	LIMIT: 10,
 	OFFSET: 0,
 } as const;
 

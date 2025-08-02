@@ -139,7 +139,11 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 			set(
 				produce((state) => {
 					state.memories = data.memories;
-					state.pagination = data.pagination;
+					state.pagination = {
+						limit: Number(data.pagination.limit),
+						offset: Number(data.pagination.offset),
+						total: Number(data.pagination.total),
+					};
 				}),
 			);
 		} catch (error: unknown) {
