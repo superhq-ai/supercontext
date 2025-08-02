@@ -8,13 +8,15 @@ export const createMemorySchema = z.object({
 
 export const searchMemoriesSchema = z.object({
 	query: z.string().min(1),
-	spaceId: z.string().min(1),
+	spaceId: z.array(z.string().min(1)),
 	limit: z.number().int().positive().optional(),
 	offset: z.number().int().nonnegative().optional(),
+	sortOrder: z.enum(["asc", "desc"]).optional(),
 });
 
 export const listMemoriesSchema = z.object({
-	spaceId: z.string().min(1).optional(),
+	spaceId: z.array(z.string().min(1)),
 	limit: z.number().int().positive().optional(),
 	offset: z.number().int().nonnegative().optional(),
+	sortOrder: z.enum(["asc", "desc"]).optional(),
 });

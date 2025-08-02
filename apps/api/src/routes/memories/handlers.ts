@@ -69,25 +69,34 @@ export async function handleGetMemory(c: Context) {
 }
 
 export async function handleListMemories(c: Context) {
-	const spaceId = c.req.query("spaceId");
+	const spaceId = c.req.queries("spaceId") || [];
 	const limit = parseInt(c.req.query("limit") || "50");
 	const offset = parseInt(c.req.query("offset") || "0");
+	const sortOrder = c.req.query("sortOrder") || "desc";
 
-	if (!spaceId) {
-		return c.json({ error: "spaceId is required" }, 400);
-	}
-
-	const parse = listMemoriesSchema.safeParse({ spaceId, limit, offset });
+	const parse = listMemoriesSchema.safeParse({
+		spaceId,
+		limit,
+		offset,
+		sortOrder,
+	});
 	if (!parse.success) {
 		return c.json({ error: "Invalid input", details: parse.error.errors }, 400);
 	}
 
-	const hasAccess = await checkSpaceAccess(c, spaceId);
-	if (!hasAccess) {
-		throw new HTTPException(403, { message: "Forbidden" });
+	for (const spaceId of parse.data.spaceId) {
+		const hasAccess = await checkSpaceAccess(c, spaceId);
+		if (!hasAccess) {
+			throw new HTTPException(403, { message: "Forbidden" });
+		}
 	}
 
-	const result = await listMemories(spaceId, limit, offset);
+	const result = await listMemories({
+		spaceIds: parse.data.spaceId,
+		limit: parse.data.limit,
+		offset: parse.data.offset,
+		sortOrder: parse.data.sortOrder,
+	});
 	return c.json(result);
 }
 
@@ -98,12 +107,19 @@ export async function handleSearchMemories(c: Context) {
 		return c.json({ error: "Invalid input", details: parse.error.errors }, 400);
 	}
 
-	const hasAccess = await checkSpaceAccess(c, parse.data.spaceId);
-	if (!hasAccess) {
-		throw new HTTPException(403, { message: "Forbidden" });
+	for (const spaceId of parse.data.spaceId) {
+		const hasAccess = await checkSpaceAccess(c, spaceId);
+		if (!hasAccess) {
+			throw new HTTPException(403, { message: "Forbidden" });
+		}
 	}
 
-	const result = await searchMemories(parse.data);
+	const result = await searchMemories({
+		query: parse.data.query,
+		spaceIds: parse.data.spaceId,
+		limit: parse.data.limit,
+		offset: parse.data.offset,
+	});
 	return c.json(result);
 }
 

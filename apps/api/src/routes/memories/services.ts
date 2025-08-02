@@ -49,34 +49,33 @@ export async function getMemory(memoryId: string) {
 	return found;
 }
 
-export async function listMemories(spaceId: string, limit = 50, offset = 0) {
-	let spaceIds: string[];
+export async function listMemories({
+	spaceIds,
+	limit = 50,
+	offset = 0,
+	sortOrder = "desc",
+}: {
+	spaceIds: string[];
+	limit?: number;
+	offset?: number;
+	sortOrder?: "asc" | "desc";
+}) {
+	const query = db.select().from(memory);
+	const totalQuery = db.select({ count: sql<number>`count(*)` }).from(memory);
 
-	if (!spaceId) {
-		const spaces = await db
-			.select({ id: memory.spaceId })
-			.from(memory)
-			.groupBy(memory.spaceId);
-		spaceIds = spaces.map((s) => s.id);
-	} else {
-		spaceIds = [spaceId];
+	if (spaceIds.length > 0) {
+		query.where(inArray(memory.spaceId, spaceIds));
+		totalQuery.where(inArray(memory.spaceId, spaceIds));
 	}
 
-	if (spaceIds.length === 0) {
-		return { memories: [], pagination: { limit, offset, total: 0 } };
+	if (sortOrder) {
+		query.orderBy(
+			sortOrder === "asc" ? memory.createdAt : desc(memory.createdAt),
+		);
 	}
 
-	const memories = await db
-		.select()
-		.from(memory)
-		.where(inArray(memory.spaceId, spaceIds))
-		.limit(limit)
-		.offset(offset);
-
-	const total = await db
-		.select({ count: sql<number>`count(*)` })
-		.from(memory)
-		.where(inArray(memory.spaceId, spaceIds));
+	const memories = await query.limit(limit).offset(offset);
+	const total = await totalQuery;
 
 	return {
 		memories,
@@ -90,29 +89,39 @@ export async function listMemories(spaceId: string, limit = 50, offset = 0) {
 
 export type SearchMemoriesInput = {
 	query: string;
-	spaceId: string;
+	spaceIds: string[];
 	limit?: number;
 	offset?: number;
 };
 
 export async function searchMemories({
 	query,
-	spaceId,
+	spaceIds,
 	limit = 10,
 	offset = 0,
 }: SearchMemoriesInput) {
 	const queryEmbedding = await generateEmbedding(query);
-	const similarity = sql<number>`1 - (${cosineDistance(memory.embedding, queryEmbedding)})`;
+	const similarity = sql<number>`1 - (${cosineDistance(
+		memory.embedding,
+		queryEmbedding,
+	)})`;
+
+	const conditions = [gt(similarity, 0.5)];
+	if (spaceIds.length > 0) {
+		conditions.push(inArray(memory.spaceId, spaceIds));
+	}
 
 	const results = await db
 		.select({
 			id: memory.id,
 			content: memory.content,
 			metadata: memory.metadata,
+			createdAt: memory.createdAt,
+			spaceId: memory.spaceId,
 			similarity,
 		})
 		.from(memory)
-		.where(sql`${eq(memory.spaceId, spaceId)} AND ${gt(similarity, 0.5)}`)
+		.where(sql.join(conditions, sql.raw(" AND ")))
 		.orderBy((t) => desc(t.similarity))
 		.limit(limit)
 		.offset(offset);
@@ -120,7 +129,7 @@ export async function searchMemories({
 	const total = await db
 		.select({ count: sql<number>`count(*)` })
 		.from(memory)
-		.where(sql`${eq(memory.spaceId, spaceId)} AND ${gt(similarity, 0.5)}`);
+		.where(sql.join(conditions, sql.raw(" AND ")));
 
 	return {
 		results,
