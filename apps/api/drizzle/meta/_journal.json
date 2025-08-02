@@ -5,29 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1754116952632,
-      "tag": "0000_stormy_stone_men",
+      "when": 1754178795582,
+      "tag": "0000_overconfident_stryfe",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1754116992222,
-      "tag": "0001_cold_cargill",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1754157768681,
-      "tag": "0002_true_robin_chapel",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1754159230024,
-      "tag": "0003_gray_reaper",
+      "when": 1754178815075,
+      "tag": "0001_giant_sunspot",
       "breakpoints": true
     }
   ]

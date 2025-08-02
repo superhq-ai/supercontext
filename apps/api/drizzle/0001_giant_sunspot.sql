@@ -31,7 +31,6 @@ CREATE TABLE IF NOT EXISTS "api_key" (
 	"key" text NOT NULL,
 	"name" text NOT NULL,
 	"status" "api_key_status" DEFAULT 'active' NOT NULL,
-	"space_id" text NOT NULL,
 	"user_id" text NOT NULL,
 	"created_at" timestamp NOT NULL,
 	"updated_at" timestamp NOT NULL,
@@ -39,12 +38,21 @@ CREATE TABLE IF NOT EXISTS "api_key" (
 	CONSTRAINT "api_key_key_unique" UNIQUE("key")
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "api_key_to_space" (
+	"api_key_id" text NOT NULL,
+	"space_id" text NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "memories_to_spaces" (
+	"memory_id" text NOT NULL,
+	"space_id" text NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "memory" (
 	"id" text PRIMARY KEY NOT NULL,
 	"content" text NOT NULL,
 	"embedding" vector(1536) NOT NULL,
 	"metadata" jsonb,
-	"space_id" text NOT NULL,
 	"user_id" text NOT NULL,
 	"api_key_id" text,
 	"created_at" timestamp NOT NULL,
@@ -77,6 +85,7 @@ CREATE TABLE IF NOT EXISTS "user" (
 	"name" text NOT NULL,
 	"email" text NOT NULL,
 	"role" "role" DEFAULT 'user' NOT NULL,
+	"active" boolean NOT NULL,
 	"email_verified" boolean NOT NULL,
 	"image" text,
 	"created_at" timestamp NOT NULL,
@@ -107,19 +116,31 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "api_key" ADD CONSTRAINT "api_key_space_id_space_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."space"("id") ON DELETE cascade ON UPDATE no action;
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
  ALTER TABLE "api_key" ADD CONSTRAINT "api_key_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "memory" ADD CONSTRAINT "memory_space_id_space_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."space"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "api_key_to_space" ADD CONSTRAINT "api_key_to_space_api_key_id_api_key_id_fk" FOREIGN KEY ("api_key_id") REFERENCES "public"."api_key"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "api_key_to_space" ADD CONSTRAINT "api_key_to_space_space_id_space_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."space"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "memories_to_spaces" ADD CONSTRAINT "memories_to_spaces_memory_id_memory_id_fk" FOREIGN KEY ("memory_id") REFERENCES "public"."memory"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "memories_to_spaces" ADD CONSTRAINT "memories_to_spaces_space_id_space_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."space"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -159,3 +180,5 @@ DO $$ BEGIN
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
+--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "memoryEmbeddingIndex" ON "memory" USING hnsw ("embedding" vector_cosine_ops);

@@ -1,6 +1,6 @@
 {
-  "id": "0b4972f7-83c7-4431-bc6b-33a3c0139fbc",
-  "prevId": "fbb36aef-4e72-4bad-a28e-7cd04917f859",
+  "id": "61187731-32a1-4de6-aac0-1c924e12da3d",
+  "prevId": "4fa0d2c5-ee24-4ef3-a6e3-2de561ba0264",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -136,12 +136,6 @@
           "notNull": true,
           "default": "'active'"
         },
-        "space_id": {
-          "name": "space_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "user_id": {
           "name": "user_id",
           "type": "text",
@@ -169,19 +163,6 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "api_key_space_id_space_id_fk": {
-          "name": "api_key_space_id_space_id_fk",
-          "tableFrom": "api_key",
-          "tableTo": "space",
-          "columnsFrom": [
-            "space_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "api_key_user_id_user_id_fk": {
           "name": "api_key_user_id_user_id_fk",
           "tableFrom": "api_key",
@@ -206,6 +187,104 @@
           ]
         }
       }
+    },
+    "public.api_key_to_space": {
+      "name": "api_key_to_space",
+      "schema": "",
+      "columns": {
+        "api_key_id": {
+          "name": "api_key_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "space_id": {
+          "name": "space_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "api_key_to_space_api_key_id_api_key_id_fk": {
+          "name": "api_key_to_space_api_key_id_api_key_id_fk",
+          "tableFrom": "api_key_to_space",
+          "tableTo": "api_key",
+          "columnsFrom": [
+            "api_key_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "api_key_to_space_space_id_space_id_fk": {
+          "name": "api_key_to_space_space_id_space_id_fk",
+          "tableFrom": "api_key_to_space",
+          "tableTo": "space",
+          "columnsFrom": [
+            "space_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.memories_to_spaces": {
+      "name": "memories_to_spaces",
+      "schema": "",
+      "columns": {
+        "memory_id": {
+          "name": "memory_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "space_id": {
+          "name": "space_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "memories_to_spaces_memory_id_memory_id_fk": {
+          "name": "memories_to_spaces_memory_id_memory_id_fk",
+          "tableFrom": "memories_to_spaces",
+          "tableTo": "memory",
+          "columnsFrom": [
+            "memory_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "memories_to_spaces_space_id_space_id_fk": {
+          "name": "memories_to_spaces_space_id_space_id_fk",
+          "tableFrom": "memories_to_spaces",
+          "tableTo": "space",
+          "columnsFrom": [
+            "space_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     },
     "public.memory": {
       "name": "memory",
@@ -235,12 +314,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "space_id": {
-          "name": "space_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "user_id": {
           "name": "user_id",
           "type": "text",
@@ -266,21 +339,25 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "memoryEmbeddingIndex": {
+          "name": "memoryEmbeddingIndex",
+          "columns": [
+            {
+              "expression": "embedding",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "vector_cosine_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "hnsw",
+          "with": {}
+        }
+      },
       "foreignKeys": {
-        "memory_space_id_space_id_fk": {
-          "name": "memory_space_id_space_id_fk",
-          "tableFrom": "memory",
-          "tableTo": "space",
-          "columnsFrom": [
-            "space_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "memory_user_id_user_id_fk": {
           "name": "memory_user_id_user_id_fk",
           "tableFrom": "memory",
@@ -480,6 +557,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'user'"
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
         },
         "email_verified": {
           "name": "email_verified",

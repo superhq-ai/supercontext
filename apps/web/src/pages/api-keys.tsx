@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Navigation } from "@/components/navigation";
+import type { Option } from "@/components/space-selector";
+import { SpaceSelector } from "@/components/space-selector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,24 +18,29 @@ interface ApiKey {
 	id: string;
 	name: string;
 	key: string;
-	spaceId?: string;
+	spaceIds: string[];
 	createdAt: string;
 	lastUsedAt?: string;
 	status: "active" | "revoked";
 }
 
+interface Space {
+	id: string;
+	name: string;
+}
+
 export function ApiKeysPage() {
 	const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+	const [spaces, setSpaces] = useState<Option[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isCreating, setIsCreating] = useState(false);
 	const [newKeyName, setNewKeyName] = useState("");
-	const [newKeySpaceId, setNewKeySpaceId] = useState("");
+	const [selectedSpaceIds, setSelectedSpaceIds] = useState<string[]>([]);
 
 	const fetchApiKeys = useCallback(async () => {
 		setIsLoading(true);
 		try {
 			const response = await fetchWithAuth("/api/api-keys");
-
 			if (response.ok) {
 				const data = await response.json();
 				setApiKeys(data);
@@ -42,6 +49,18 @@ export function ApiKeysPage() {
 			console.error("Failed to fetch API keys:", error);
 		} finally {
 			setIsLoading(false);
+		}
+	}, []);
+
+	const fetchSpaces = useCallback(async () => {
+		try {
+			const response = await fetchWithAuth("/api/spaces");
+			if (response.ok) {
+				const data: Space[] = await response.json();
+				setSpaces(data.map((s) => ({ value: s.id, label: s.name })));
+			}
+		} catch (error) {
+			console.error("Failed to fetch spaces:", error);
 		}
 	}, []);
 
@@ -54,7 +73,7 @@ export function ApiKeysPage() {
 				method: "POST",
 				body: JSON.stringify({
 					name: newKeyName,
-					spaceId: newKeySpaceId || undefined,
+					spaceIds: selectedSpaceIds,
 				}),
 			});
 
@@ -62,7 +81,7 @@ export function ApiKeysPage() {
 				const newApiKey = await response.json();
 				setApiKeys([...apiKeys, newApiKey]);
 				setNewKeyName("");
-				setNewKeySpaceId("");
+				setSelectedSpaceIds([]);
 			}
 		} catch (error) {
 			console.error("Failed to create API key:", error);
@@ -113,7 +132,8 @@ export function ApiKeysPage() {
 
 	useEffect(() => {
 		fetchApiKeys();
-	}, [fetchApiKeys]);
+		fetchSpaces();
+	}, [fetchApiKeys, fetchSpaces]);
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -157,16 +177,15 @@ export function ApiKeysPage() {
 								</div>
 								<div>
 									<label
-										htmlFor="spaceId"
+										htmlFor="spaceIds"
 										className="text-sm font-medium text-muted-foreground"
 									>
-										Space ID (Optional)
+										Spaces
 									</label>
-									<Input
-										id="spaceId"
-										placeholder="Enter space ID for restricted access..."
-										value={newKeySpaceId}
-										onChange={(e) => setNewKeySpaceId(e.target.value)}
+									<SpaceSelector
+										options={spaces}
+										selected={selectedSpaceIds}
+										onChange={setSelectedSpaceIds}
 										className="mt-1"
 									/>
 								</div>
@@ -243,9 +262,10 @@ export function ApiKeysPage() {
 													{new Date(apiKey.lastUsedAt).toLocaleDateString()}
 												</div>
 											)}
-											{apiKey.spaceId && (
+											{apiKey.spaceIds && apiKey.spaceIds.length > 0 && (
 												<div>
-													<strong>Space ID:</strong> {apiKey.spaceId}
+													<strong>Space IDs:</strong>{" "}
+													{apiKey.spaceIds.join(", ")}
 												</div>
 											)}
 										</div>

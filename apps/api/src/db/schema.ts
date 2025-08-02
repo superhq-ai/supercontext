@@ -112,9 +112,6 @@ export const apiKey = pgTable("api_key", {
 	key: text("key").notNull().unique(),
 	name: text("name").notNull(),
 	status: apiKeyStatusEnum("status").default("active").notNull(),
-	spaceId: text("space_id")
-		.notNull()
-		.references(() => space.id, { onDelete: "cascade" }),
 	userId: text("user_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
@@ -162,7 +159,7 @@ export const memory = pgTable(
 export const spaceRelations = relations(space, ({ many }) => ({
 	userSpaces: many(userSpace),
 	memories: many(memoriesToSpaces),
-	apiKeys: many(apiKey),
+	apiKeys: many(apiKeyToSpace),
 }));
 
 export const userRelations = relations(user, ({ many }) => ({
@@ -187,11 +184,28 @@ export const apiKeyRelations = relations(apiKey, ({ one, many }) => ({
 		fields: [apiKey.userId],
 		references: [user.id],
 	}),
+	spaces: many(apiKeyToSpace),
+	memories: many(memory),
+}));
+
+export const apiKeyToSpace = pgTable("api_key_to_space", {
+	apiKeyId: text("api_key_id")
+		.notNull()
+		.references(() => apiKey.id, { onDelete: "cascade" }),
+	spaceId: text("space_id")
+		.notNull()
+		.references(() => space.id, { onDelete: "cascade" }),
+});
+
+export const apiKeyToSpaceRelations = relations(apiKeyToSpace, ({ one }) => ({
+	apiKey: one(apiKey, {
+		fields: [apiKeyToSpace.apiKeyId],
+		references: [apiKey.id],
+	}),
 	space: one(space, {
-		fields: [apiKey.spaceId],
+		fields: [apiKeyToSpace.spaceId],
 		references: [space.id],
 	}),
-	memories: many(memory),
 }));
 
 export const memoriesToSpaces = pgTable("memories_to_spaces", {

@@ -1,10 +1,10 @@
 import crypto from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Context, Next } from "hono";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { db } from "@/db";
-import { apiKey } from "@/db/schema";
+import { apiKey, apiKeyToSpace } from "@/db/schema";
 import type { AppVariables, AuthType, ProtectedAppVariables } from "@/types";
 
 type AuthOptions = {
@@ -28,24 +28,38 @@ export const auth = (options: AuthOptions = {}) =>
 			// 1. Try API key authentication if allowed
 			if (allowApiKey) {
 				const authHeader = c.req.header("Authorization");
-				console.log("Authorization Header:", authHeader);
 				if (authHeader?.startsWith("Bearer ")) {
 					const token = authHeader.replace("Bearer ", "");
-					console.log("API Key Token:", token);
 					const hashedKey = crypto
 						.createHash("sha256")
 						.update(token)
 						.digest("hex");
-					console.log("Hashed API Key:", hashedKey);
+
 					const [keyRecord] = await db
 						.select()
 						.from(apiKey)
 						.where(eq(apiKey.key, hashedKey))
 						.limit(1);
 
-					console.log("Key Record:", keyRecord);
-
 					if (keyRecord) {
+						const spaceId = c.req.param("spaceId");
+						if (spaceId) {
+							const [keyToSpace] = await db
+								.select()
+								.from(apiKeyToSpace)
+								.where(
+									and(
+										eq(apiKeyToSpace.apiKeyId, keyRecord.id),
+										eq(apiKeyToSpace.spaceId, spaceId),
+									),
+								)
+								.limit(1);
+							if (!keyToSpace) {
+								throw new HTTPException(403, {
+									message: "Forbidden: API key not valid for this space",
+								});
+							}
+						}
 						c.set("apiKey", keyRecord);
 						isAuthenticated = true;
 						authType = "apiKey";

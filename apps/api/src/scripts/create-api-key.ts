@@ -30,15 +30,15 @@ async function main() {
 		name: "value",
 		message: "Enter the name for the API key",
 	});
-	const spaceId = await prompts({
+	const spaceIds = await prompts({
 		type: "text",
 		name: "value",
-		message: "Enter the space ID for the API key",
+		message: "Enter comma-separated space IDs for the API key",
 	});
 
 	const { key: apiKey, id: apiKeyId } = await createApiKey({
 		name: name.value,
-		spaceId: spaceId.value,
+		spaceIds: spaceIds.value.split(",").map((s: string) => s.trim()),
 		userId,
 	});
 

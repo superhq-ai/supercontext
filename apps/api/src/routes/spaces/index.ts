@@ -14,7 +14,7 @@ const router = createProtectedRouter();
 
 router.get("/", auth(), handleListSpaces);
 router.get("/:spaceId", auth(), handleGetSpace);
-router.post("/", auth({ requireAdmin: true }), handleCreateSpace);
+router.post("/", auth(), handleCreateSpace);
 router.patch("/:spaceId", auth({ requireAdmin: true }), handleUpdateSpace);
 router.delete("/:spaceId", auth({ requireAdmin: true }), handleDeleteSpace);
 router.post(

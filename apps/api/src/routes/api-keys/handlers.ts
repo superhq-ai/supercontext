@@ -20,7 +20,7 @@ export async function handleCreateApiKey(c: Context) {
 
 	const key = await createApiKey({
 		name: parse.data.name,
-		spaceId: parse.data.spaceId,
+		spaceIds: parse.data.spaceIds,
 		userId: user.id,
 	});
 	return c.json(key, 201);

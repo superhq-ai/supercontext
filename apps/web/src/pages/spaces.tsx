@@ -113,56 +113,54 @@ export function SpacesPage() {
 					</div>
 
 					{/* Create New Space */}
-					{user?.role === "admin" && (
-						<Card className="mb-6">
-							<CardHeader>
-								<CardTitle>Create New Space</CardTitle>
-								<CardDescription>
-									Create a new space for organizing memories
-								</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<div className="space-y-4">
-									<div>
-										<label
-											htmlFor="spaceName"
-											className="text-sm font-medium text-muted-foreground"
-										>
-											Space Name
-										</label>
-										<Input
-											id="spaceName"
-											placeholder="Enter space name..."
-											value={newSpaceName}
-											onChange={(e) => setNewSpaceName(e.target.value)}
-											className="mt-1"
-										/>
-									</div>
-									<div>
-										<label
-											htmlFor="spaceDescription"
-											className="text-sm font-medium text-muted-foreground"
-										>
-											Description (Optional)
-										</label>
-										<Input
-											id="spaceDescription"
-											placeholder="Enter space description..."
-											value={newSpaceDescription}
-											onChange={(e) => setNewSpaceDescription(e.target.value)}
-											className="mt-1"
-										/>
-									</div>
-									<Button
-										onClick={createSpace}
-										disabled={isCreating || !newSpaceName.trim()}
+					<Card className="mb-6">
+						<CardHeader>
+							<CardTitle>Create New Space</CardTitle>
+							<CardDescription>
+								Create a new space for organizing memories
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<div className="space-y-4">
+								<div>
+									<label
+										htmlFor="spaceName"
+										className="text-sm font-medium text-muted-foreground"
 									>
-										{isCreating ? "Creating..." : "Create Space"}
-									</Button>
+										Space Name
+									</label>
+									<Input
+										id="spaceName"
+										placeholder="Enter space name..."
+										value={newSpaceName}
+										onChange={(e) => setNewSpaceName(e.target.value)}
+										className="mt-1"
+									/>
 								</div>
-							</CardContent>
-						</Card>
-					)}
+								<div>
+									<label
+										htmlFor="spaceDescription"
+										className="text-sm font-medium text-muted-foreground"
+									>
+										Description (Optional)
+									</label>
+									<Input
+										id="spaceDescription"
+										placeholder="Enter space description..."
+										value={newSpaceDescription}
+										onChange={(e) => setNewSpaceDescription(e.target.value)}
+										className="mt-1"
+									/>
+								</div>
+								<Button
+									onClick={createSpace}
+									disabled={isCreating || !newSpaceName.trim()}
+								>
+									{isCreating ? "Creating..." : "Create Space"}
+								</Button>
+							</div>
+						</CardContent>
+					</Card>
 
 					{/* Spaces List */}
 					<div className="space-y-4">
