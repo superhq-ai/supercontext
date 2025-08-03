@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Navigation } from "@/components/navigation";
+import { MainLayout } from "@/components/layouts/main-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -102,122 +102,118 @@ export function SpacesPage() {
 	}, [fetchSpaces]);
 
 	return (
-		<div className="min-h-screen bg-background">
-			<Navigation />
+		<MainLayout>
+			<div className="px-4 py-6 sm:px-0">
+				<div className="mb-8">
+					<h1 className="text-3xl font-bold text-foreground mb-2">
+						Spaces Management
+					</h1>
+					<p className="text-muted-foreground">
+						Manage your spaces and their settings
+					</p>
+				</div>
 
-			<main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-				<div className="px-4 py-6 sm:px-0">
-					<div className="mb-8">
-						<h1 className="text-3xl font-bold text-foreground mb-2">
-							Spaces Management
-						</h1>
-						<p className="text-muted-foreground">
-							Manage your spaces and their settings
-						</p>
-					</div>
-
-					{/* Create New Space */}
-					<Card className="mb-6">
-						<CardHeader>
-							<CardTitle>Create New Space</CardTitle>
-							<CardDescription>
-								Create a new space for organizing memories
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<div className="space-y-4">
-								<div>
-									<label
-										htmlFor="spaceName"
-										className="text-sm font-medium text-muted-foreground"
-									>
-										Space Name
-									</label>
-									<Input
-										id="spaceName"
-										placeholder="Enter space name..."
-										value={newSpaceName}
-										onChange={(e) => setNewSpaceName(e.target.value)}
-										className="mt-1"
-									/>
-								</div>
-								<div>
-									<label
-										htmlFor="spaceDescription"
-										className="text-sm font-medium text-muted-foreground"
-									>
-										Description (Optional)
-									</label>
-									<Input
-										id="spaceDescription"
-										placeholder="Enter space description..."
-										value={newSpaceDescription}
-										onChange={(e) => setNewSpaceDescription(e.target.value)}
-										className="mt-1"
-									/>
-								</div>
-								<Button
-									onClick={createSpace}
-									disabled={isCreating || !newSpaceName.trim()}
+				{/* Create New Space */}
+				<Card className="mb-6">
+					<CardHeader>
+						<CardTitle>Create New Space</CardTitle>
+						<CardDescription>
+							Create a new space for organizing memories
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<div className="space-y-4">
+							<div>
+								<label
+									htmlFor="spaceName"
+									className="text-sm font-medium text-muted-foreground"
 								>
-									{isCreating ? "Creating..." : "Create Space"}
-								</Button>
+									Space Name
+								</label>
+								<Input
+									id="spaceName"
+									placeholder="Enter space name..."
+									value={newSpaceName}
+									onChange={(e) => setNewSpaceName(e.target.value)}
+									className="mt-1"
+								/>
 							</div>
-						</CardContent>
-					</Card>
+							<div>
+								<label
+									htmlFor="spaceDescription"
+									className="text-sm font-medium text-muted-foreground"
+								>
+									Description (Optional)
+								</label>
+								<Input
+									id="spaceDescription"
+									placeholder="Enter space description..."
+									value={newSpaceDescription}
+									onChange={(e) => setNewSpaceDescription(e.target.value)}
+									className="mt-1"
+								/>
+							</div>
+							<Button
+								onClick={createSpace}
+								disabled={isCreating || !newSpaceName.trim()}
+							>
+								{isCreating ? "Creating..." : "Create Space"}
+							</Button>
+						</div>
+					</CardContent>
+				</Card>
 
-					{/* Spaces List */}
-					<div className="space-y-4">
-						{isLoading ? (
-							<div className="text-center py-8">
-								<p className="text-muted-foreground">Loading spaces...</p>
-							</div>
-						) : spaces.length === 0 ? (
-							<Card>
-								<CardContent className="py-8 text-center">
-									<p className="text-muted-foreground">No spaces found.</p>
+				{/* Spaces List */}
+				<div className="space-y-4">
+					{isLoading ? (
+						<div className="text-center py-8">
+							<p className="text-muted-foreground">Loading spaces...</p>
+						</div>
+					) : spaces.length === 0 ? (
+						<Card>
+							<CardContent className="py-8 text-center">
+								<p className="text-muted-foreground">No spaces found.</p>
+							</CardContent>
+						</Card>
+					) : (
+						spaces.map((space) => (
+							<Card key={space.id}>
+								<CardHeader>
+									<div className="flex justify-between items-start">
+										<div>
+											<CardTitle className="text-lg">{space.name}</CardTitle>
+											{space.description && (
+												<CardDescription className="mt-1">
+													{space.description}
+												</CardDescription>
+											)}
+										</div>
+										<div className="flex gap-2">
+											<Badge variant="outline">
+												{new Date(space.createdAt).toLocaleDateString()}
+											</Badge>
+											{user?.role === "admin" && (
+												<Button
+													variant="destructive"
+													size="sm"
+													onClick={() => deleteSpace(space.id)}
+												>
+													Delete
+												</Button>
+											)}
+										</div>
+									</div>
+								</CardHeader>
+								<CardContent>
+									<div className="text-sm text-muted-foreground">
+										<strong>Space ID:</strong> {space.id}
+									</div>
 								</CardContent>
 							</Card>
-						) : (
-							spaces.map((space) => (
-								<Card key={space.id}>
-									<CardHeader>
-										<div className="flex justify-between items-start">
-											<div>
-												<CardTitle className="text-lg">{space.name}</CardTitle>
-												{space.description && (
-													<CardDescription className="mt-1">
-														{space.description}
-													</CardDescription>
-												)}
-											</div>
-											<div className="flex gap-2">
-												<Badge variant="outline">
-													{new Date(space.createdAt).toLocaleDateString()}
-												</Badge>
-												{user?.role === "admin" && (
-													<Button
-														variant="destructive"
-														size="sm"
-														onClick={() => deleteSpace(space.id)}
-													>
-														Delete
-													</Button>
-												)}
-											</div>
-										</div>
-									</CardHeader>
-									<CardContent>
-										<div className="text-sm text-muted-foreground">
-											<strong>Space ID:</strong> {space.id}
-										</div>
-									</CardContent>
-								</Card>
-							))
-						)}
-					</div>
+						))
+					)}
 				</div>
-			</main>
-		</div>
+			</div>
+		</MainLayout>
 	);
 }

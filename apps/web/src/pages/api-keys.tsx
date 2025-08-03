@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiKeyModal } from "@/components/api-key-modal";
-import { Navigation } from "@/components/navigation";
+import { MainLayout } from "@/components/layouts/main-layout";
 import type { Option } from "@/components/space-selector";
 import { SpaceSelector } from "@/components/space-selector";
 import { Badge } from "@/components/ui/badge";
@@ -141,150 +141,146 @@ export function ApiKeysPage() {
 	}, [fetchApiKeys, fetchSpaces]);
 
 	return (
-		<div className="min-h-screen bg-background">
-			<Navigation />
+		<MainLayout>
+			<div className="px-4 py-6 sm:px-0">
+				<div className="mb-8">
+					<h1 className="text-3xl font-bold text-foreground mb-2">
+						API Keys Management
+					</h1>
+					<p className="text-muted-foreground">
+						Manage your API keys for programmatic access
+					</p>
+				</div>
 
-			<main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-				<div className="px-4 py-6 sm:px-0">
-					<div className="mb-8">
-						<h1 className="text-3xl font-bold text-foreground mb-2">
-							API Keys Management
-						</h1>
-						<p className="text-muted-foreground">
-							Manage your API keys for programmatic access
-						</p>
-					</div>
-
-					{/* Create New API Key */}
-					<Card className="mb-6">
-						<CardHeader>
-							<CardTitle>Create New API Key</CardTitle>
-							<CardDescription>
-								Create a new API key for programmatic access to your spaces
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<div className="space-y-4">
-								<div>
-									<label
-										htmlFor="apiKeyName"
-										className="text-sm font-medium text-muted-foreground"
-									>
-										API Key Name
-									</label>
-									<Input
-										id="apiKeyName"
-										placeholder="Enter API key name..."
-										value={newKeyName}
-										onChange={(e) => setNewKeyName(e.target.value)}
-										className="mt-1"
-									/>
-								</div>
-								<div>
-									<label
-										htmlFor="spaceIds"
-										className="text-sm font-medium text-muted-foreground"
-									>
-										Spaces
-									</label>
-									<SpaceSelector
-										options={spaces}
-										selected={selectedSpaceIds}
-										onChange={setSelectedSpaceIds}
-										className="mt-1"
-									/>
-								</div>
-								<Button
-									onClick={createApiKey}
-									disabled={isCreating || !newKeyName.trim()}
+				{/* Create New API Key */}
+				<Card className="mb-6">
+					<CardHeader>
+						<CardTitle>Create New API Key</CardTitle>
+						<CardDescription>
+							Create a new API key for programmatic access to your spaces
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<div className="space-y-4">
+							<div>
+								<label
+									htmlFor="apiKeyName"
+									className="text-sm font-medium text-muted-foreground"
 								>
-									{isCreating ? "Creating..." : "Create API Key"}
-								</Button>
+									API Key Name
+								</label>
+								<Input
+									id="apiKeyName"
+									placeholder="Enter API key name..."
+									value={newKeyName}
+									onChange={(e) => setNewKeyName(e.target.value)}
+									className="mt-1"
+								/>
 							</div>
-						</CardContent>
-					</Card>
+							<div>
+								<label
+									htmlFor="spaceIds"
+									className="text-sm font-medium text-muted-foreground"
+								>
+									Spaces
+								</label>
+								<SpaceSelector
+									options={spaces}
+									selected={selectedSpaceIds}
+									onChange={setSelectedSpaceIds}
+									className="mt-1"
+								/>
+							</div>
+							<Button
+								onClick={createApiKey}
+								disabled={isCreating || !newKeyName.trim()}
+							>
+								{isCreating ? "Creating..." : "Create API Key"}
+							</Button>
+						</div>
+					</CardContent>
+				</Card>
 
-					{/* API Keys List */}
-					<div className="space-y-4">
-						{isLoading ? (
-							<div className="text-center py-8">
-								<p className="text-muted-foreground">Loading API keys...</p>
-							</div>
-						) : apiKeys.length === 0 ? (
-							<Card>
-								<CardContent className="py-8 text-center">
-									<p className="text-muted-foreground">No API keys found.</p>
+				{/* API Keys List */}
+				<div className="space-y-4">
+					{isLoading ? (
+						<div className="text-center py-8">
+							<p className="text-muted-foreground">Loading API keys...</p>
+						</div>
+					) : apiKeys.length === 0 ? (
+						<Card>
+							<CardContent className="py-8 text-center">
+								<p className="text-muted-foreground">No API keys found.</p>
+							</CardContent>
+						</Card>
+					) : (
+						apiKeys.map((apiKey) => (
+							<Card key={apiKey.id}>
+								<CardHeader>
+									<div className="flex justify-between items-start">
+										<div>
+											<CardTitle className="text-lg">{apiKey.name}</CardTitle>
+											<CardDescription className="mt-1">
+												API Key: {apiKey.key.slice(0, 8)}...
+											</CardDescription>
+										</div>
+										<div className="flex gap-2">
+											<Badge
+												variant={
+													apiKey.status === "active" ? "default" : "secondary"
+												}
+											>
+												{apiKey.status === "active" ? "Active" : "Revoked"}
+											</Badge>
+											{apiKey.status === "active" ? (
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() => revokeApiKey(apiKey.id)}
+												>
+													Revoke
+												</Button>
+											) : (
+												<Button
+													variant="destructive"
+													size="sm"
+													onClick={() => deleteApiKey(apiKey.id)}
+												>
+													Delete
+												</Button>
+											)}
+										</div>
+									</div>
+								</CardHeader>
+								<CardContent>
+									<div className="space-y-2 text-sm text-muted-foreground">
+										<div>
+											<strong>Created:</strong>{" "}
+											{new Date(apiKey.createdAt).toLocaleDateString()}
+										</div>
+										{apiKey.lastUsedAt && (
+											<div>
+												<strong>Last Used:</strong>{" "}
+												{new Date(apiKey.lastUsedAt).toLocaleDateString()}
+											</div>
+										)}
+										{apiKey.spaces && apiKey.spaces.length > 0 && (
+											<div className="flex flex-wrap gap-2 mt-1">
+												<strong>Spaces:</strong>{" "}
+												{apiKey.spaces.map((space) => (
+													<Badge key={space.id} variant="secondary">
+														{space.name}
+													</Badge>
+												))}
+											</div>
+										)}
+									</div>
 								</CardContent>
 							</Card>
-						) : (
-							apiKeys.map((apiKey) => (
-								<Card key={apiKey.id}>
-									<CardHeader>
-										<div className="flex justify-between items-start">
-											<div>
-												<CardTitle className="text-lg">{apiKey.name}</CardTitle>
-												<CardDescription className="mt-1">
-													API Key: {apiKey.key.slice(0, 8)}...
-												</CardDescription>
-											</div>
-											<div className="flex gap-2">
-												<Badge
-													variant={
-														apiKey.status === "active" ? "default" : "secondary"
-													}
-												>
-													{apiKey.status === "active" ? "Active" : "Revoked"}
-												</Badge>
-												{apiKey.status === "active" ? (
-													<Button
-														variant="outline"
-														size="sm"
-														onClick={() => revokeApiKey(apiKey.id)}
-													>
-														Revoke
-													</Button>
-												) : (
-													<Button
-														variant="destructive"
-														size="sm"
-														onClick={() => deleteApiKey(apiKey.id)}
-													>
-														Delete
-													</Button>
-												)}
-											</div>
-										</div>
-									</CardHeader>
-									<CardContent>
-										<div className="space-y-2 text-sm text-muted-foreground">
-											<div>
-												<strong>Created:</strong>{" "}
-												{new Date(apiKey.createdAt).toLocaleDateString()}
-											</div>
-											{apiKey.lastUsedAt && (
-												<div>
-													<strong>Last Used:</strong>{" "}
-													{new Date(apiKey.lastUsedAt).toLocaleDateString()}
-												</div>
-											)}
-											{apiKey.spaces && apiKey.spaces.length > 0 && (
-												<div className="flex flex-wrap gap-2 mt-1">
-													<strong>Spaces:</strong>{" "}
-													{apiKey.spaces.map((space) => (
-														<Badge key={space.id} variant="secondary">
-															{space.name}
-														</Badge>
-													))}
-												</div>
-											)}
-										</div>
-									</CardContent>
-								</Card>
-							))
-						)}
-					</div>
+						))
+					)}
 				</div>
-			</main>
+			</div>
 
 			{newApiKey && (
 				<ApiKeyModal
@@ -293,6 +289,6 @@ export function ApiKeysPage() {
 					onClose={() => setIsModalOpen(false)}
 				/>
 			)}
-		</div>
+		</MainLayout>
 	);
 }

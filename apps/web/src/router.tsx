@@ -6,6 +6,7 @@ import { DashboardPage } from "./pages/dashboard";
 import { HomePage } from "./pages/home";
 import { MemoriesPage } from "./pages/memories";
 import { MemoryPage } from "./pages/memory";
+import NotFoundPage from "./pages/not-found";
 import { SpacesPage } from "./pages/spaces";
 import { UserManagementPage } from "./pages/user-management";
 
@@ -46,7 +47,7 @@ export const router = createBrowserRouter([
 	},
 	{
 		path: "/spaces",
-		element: <ProtectedRoute requireAdmin />,
+		element: <ProtectedRoute />,
 		children: [
 			{
 				index: true,
@@ -73,5 +74,9 @@ export const router = createBrowserRouter([
 				element: <UserManagementPage />,
 			},
 		],
+	},
+	{
+		path: "*",
+		element: <NotFoundPage />,
 	},
 ]);
