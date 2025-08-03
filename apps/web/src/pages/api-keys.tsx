@@ -19,7 +19,7 @@ interface ApiKey {
 	id: string;
 	name: string;
 	key: string;
-	spaceIds: string[];
+	spaces: Space[];
 	createdAt: string;
 	lastUsedAt?: string;
 	status: "active" | "revoked";
@@ -267,10 +267,14 @@ export function ApiKeysPage() {
 													{new Date(apiKey.lastUsedAt).toLocaleDateString()}
 												</div>
 											)}
-											{apiKey.spaceIds && apiKey.spaceIds.length > 0 && (
+											{apiKey.spaces && apiKey.spaces.length > 0 && (
 												<div>
-													<strong>Space IDs:</strong>{" "}
-													{apiKey.spaceIds.join(", ")}
+													<strong>Spaces:</strong>{" "}
+													{apiKey.spaces.map((space) => (
+														<Badge key={space.id} variant="secondary">
+															{space.name}
+														</Badge>
+													))}
 												</div>
 											)}
 										</div>

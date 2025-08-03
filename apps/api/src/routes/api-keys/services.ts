@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { apiKey, apiKeyToSpace, memory, userSpace } from "@/db/schema";
+import { apiKey, apiKeyToSpace, memory, space, userSpace } from "@/db/schema";
 
 export type CreateApiKeyInput = {
 	name: string;
@@ -56,6 +56,17 @@ export async function createApiKey({
 		);
 	}
 
+	const spaces =
+		spaceIds.length > 0
+			? await db.query.space.findMany({
+					where: inArray(space.id, spaceIds),
+					columns: {
+						id: true,
+						name: true,
+					},
+				})
+			: [];
+
 	return {
 		id: created.id,
 		key: rawKey,
@@ -63,7 +74,7 @@ export async function createApiKey({
 		status: created.status,
 		userId: created.userId,
 		createdAt: created.createdAt,
-		spaceIds,
+		spaces,
 	};
 }
 
@@ -72,8 +83,13 @@ export async function listApiKeys(userId: string) {
 		where: eq(apiKey.userId, userId),
 		with: {
 			spaces: {
-				columns: {
-					spaceId: true,
+				with: {
+					space: {
+						columns: {
+							id: true,
+							name: true,
+						},
+					},
 				},
 			},
 		},
@@ -87,7 +103,7 @@ export async function listApiKeys(userId: string) {
 		status: row.status,
 		createdAt: row.createdAt,
 		lastUsedAt: row.lastUsedAt,
-		spaceIds: row.spaces.map((s) => s.spaceId),
+		spaces: row.spaces.map((s) => s.space),
 	}));
 }
 
