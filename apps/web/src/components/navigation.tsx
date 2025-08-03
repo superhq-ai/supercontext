@@ -4,7 +4,6 @@ import {
 	Layers2,
 	LogOutIcon,
 	Menu,
-	Plug,
 	Users,
 	X,
 } from "lucide-react";
@@ -14,12 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { signOut, useAuth } from "@/contexts/auth-context";
 import { ThemeToggle } from "./theme-toggle";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "./ui/tooltip";
 
 export function Navigation() {
 	const { user } = useAuth();
@@ -44,7 +37,7 @@ export function Navigation() {
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex justify-between items-center h-16">
 					<div className="flex items-center space-x-4">
-						<div className="md:hidden">
+						<div className="lg:hidden">
 							<Button
 								variant="ghost"
 								size="sm"
@@ -66,7 +59,7 @@ export function Navigation() {
 							/>
 							<span>supercontext</span>
 						</NavLink>
-						<div className="hidden md:flex space-x-4">
+						<div className="hidden lg:flex space-x-4">
 							<NavLink to="/memories" className={activeLinkStyle}>
 								<Button variant="ghost" size="sm" className="gap-2">
 									<Database className="mr-2 h-4 w-4" />
@@ -85,22 +78,11 @@ export function Navigation() {
 									API Keys
 								</Button>
 							</NavLink>
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button variant="ghost" size="sm" className="gap-2">
-											<Plug className="mr-2 h-4 w-4" />
-											Integrations
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>Coming Soon</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
 							{user?.role === "admin" && (
 								<NavLink to="/user-management" className={activeLinkStyle}>
 									<Button variant="ghost" size="sm" className="gap-2">
 										<Users className="mr-2 h-4 w-4" />
-										User Management
+										Users
 									</Button>
 								</NavLink>
 							)}
@@ -108,7 +90,7 @@ export function Navigation() {
 					</div>
 
 					<div className="flex items-center space-x-4">
-						<div className="hidden md:flex items-center space-x-2">
+						<div className="hidden lg:flex items-center space-x-2">
 							<span className="text-sm text-muted-foreground">
 								{user?.name}
 							</span>
@@ -117,7 +99,7 @@ export function Navigation() {
 							</Badge>
 						</div>
 						<ThemeToggle />
-						<div className="hidden md:block">
+						<div className="hidden lg:block">
 							<Button variant="outline" onClick={handleSignOut} size="sm">
 								Sign Out
 							</Button>
@@ -130,7 +112,7 @@ export function Navigation() {
 			<div
 				className={`fixed inset-y-0 left-0 z-50 w-64 bg-background border-r border-border transform ${
 					isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-				} md:hidden transition-transform duration-300 ease-in-out`}
+				} lg:hidden transition-transform duration-300 ease-in-out`}
 			>
 				<div className="flex flex-col h-full p-4">
 					<div className="flex items-center justify-between mb-6">
@@ -198,21 +180,7 @@ export function Navigation() {
 								API Keys
 							</Button>
 						</NavLink>
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<Button
-										variant="ghost"
-										size="sm"
-										className="w-full justify-start"
-									>
-										<Plug className="mr-2 h-4 w-4" />
-										Integrations
-									</Button>
-								</TooltipTrigger>
-								<TooltipContent>Coming Soon</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
+
 						{user?.role === "admin" && (
 							<NavLink
 								to="/user-management"
@@ -225,7 +193,7 @@ export function Navigation() {
 									className="w-full justify-start"
 								>
 									<Users className="mr-2 h-4 w-4" />
-									User Management
+									Users
 								</Button>
 							</NavLink>
 						)}

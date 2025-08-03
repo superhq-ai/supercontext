@@ -9,7 +9,6 @@ import { MemoryPage } from "./pages/memory";
 import NotFoundPage from "./pages/not-found";
 import { SpacesPage } from "./pages/spaces";
 import { UserManagementPage } from "./pages/user-management";
-import UserProfilePage from "./pages/user-profile";
 
 export const router = createBrowserRouter([
 	{
@@ -73,16 +72,6 @@ export const router = createBrowserRouter([
 			{
 				index: true,
 				element: <UserManagementPage />,
-			},
-		],
-	},
-	{
-		path: "/users/:id",
-		element: <ProtectedRoute />,
-		children: [
-			{
-				index: true,
-				element: <UserProfilePage />,
 			},
 		],
 	},

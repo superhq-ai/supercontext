@@ -9,8 +9,7 @@
 		"start": "NODE_ENV=production bun dist/server.js",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
-		"admin:create": "bun src/scripts/create-admin.ts",
-		"admin:create-api-key": "bun src/scripts/create-api-key.ts"
+		"admin:create": "bun src/scripts/create-admin.ts"
 	},
 	"dependencies": {
 		"@google/genai": "^1.12.0",

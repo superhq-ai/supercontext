@@ -21,9 +21,9 @@ router.use("*", auth({ requireAdmin: true }));
 router.get("/search", handleSearchUsers);
 router.get("/", handleGetAllUsers);
 router.post("/", handleCreateUser);
+router.get("/invites", handleGetPendingInvites);
 router.get("/:id", handleGetUser);
 router.patch("/:id", handleUpdateUser);
 router.post("/invite", handleCreateInvite);
-router.get("/invites", handleGetPendingInvites);
 
 export default router;

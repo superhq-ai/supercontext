@@ -255,18 +255,20 @@ export function UserManagementPage() {
 										</tbody>
 									</table>
 								)}
-								<Pagination
-									currentPage={
-										Math.floor(
-											invitesPagination.offset / invitesPagination.limit,
-										) + 1
-									}
-									totalPages={Math.ceil(
-										invitesPagination.total / invitesPagination.limit,
-									)}
-									onPageChange={handleInvitePageChange}
-									pagination={invitesPagination}
-								/>
+								{invitesPagination.total > 0 && (
+									<Pagination
+										currentPage={
+											Math.floor(
+												invitesPagination.offset / invitesPagination.limit,
+											) + 1
+										}
+										totalPages={Math.ceil(
+											invitesPagination.total / invitesPagination.limit,
+										)}
+										onPageChange={handleInvitePageChange}
+										pagination={invitesPagination}
+									/>
+								)}
 							</CardContent>
 						</Card>
 						<Card>
