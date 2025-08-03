@@ -1,40 +1,56 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { getCurrentUser, updateUserProfile } from "./services";
-import { updateUserSchema } from "./validators";
+import { createUser, getAllUsers, updateUserProfile } from "./services";
+import {
+	adminUpdateUserSchema,
+	createUserSchema,
+	paginationSchema,
+} from "./validators";
 
-export async function handleGetCurrentUser(c: Context) {
+export async function handleGetAllUsers(c: Context) {
 	const user = c.get("user");
-	if (!user) {
-		throw new HTTPException(401, { message: "Unauthorized" });
+	if (!user || user.role !== "admin") {
+		throw new HTTPException(403, { message: "Forbidden" });
 	}
-	const result = await getCurrentUser(user.id);
-	if (!result) {
-		throw new HTTPException(404, { message: "User not found" });
-	}
-	return c.json(result);
+	const { page, limit } = paginationSchema.parse(c.req.query());
+	const { users, total } = await getAllUsers({ page, limit });
+	return c.json({
+		users,
+		total,
+		page,
+		limit,
+		totalPages: Math.ceil(total / limit),
+	});
 }
 
-export async function handleUpdateCurrentUser(c: Context) {
+export async function handleCreateUser(c: Context) {
 	const user = c.get("user");
-	if (!user) {
-		throw new HTTPException(401, { message: "Unauthorized" });
+	if (!user || user.role !== "admin") {
+		throw new HTTPException(403, { message: "Forbidden" });
 	}
 	const body = await c.req.json();
-	const parse = updateUserSchema.safeParse(body);
+	const parse = createUserSchema.safeParse(body);
 	if (!parse.success) {
 		return c.json({ error: "Invalid input", details: parse.error.errors }, 400);
 	}
-	try {
-		const updated = await updateUserProfile({ id: user.id, ...parse.data });
-		if (!updated) {
-			throw new HTTPException(404, { message: "User not found" });
-		}
-		return c.json(updated);
-	} catch (err) {
-		if (err instanceof Error) {
-			return c.json({ error: err.message }, 400);
-		}
-		return c.json({ error: "An unknown error occurred" }, 500);
+	const newUser = await createUser(parse.data);
+	return c.json(newUser, 201);
+}
+
+export async function handleUpdateUser(c: Context) {
+	const user = c.get("user");
+	if (!user || user.role !== "admin") {
+		throw new HTTPException(403, { message: "Forbidden" });
 	}
+	const userId = c.req.param("id");
+	const body = await c.req.json();
+	const parse = adminUpdateUserSchema.safeParse(body);
+	if (!parse.success) {
+		return c.json({ error: "Invalid input", details: parse.error.errors }, 400);
+	}
+	const updated = await updateUserProfile({ id: userId, ...parse.data });
+	if (!updated) {
+		throw new HTTPException(404, { message: "User not found" });
+	}
+	return c.json(updated);
 }

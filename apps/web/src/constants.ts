@@ -1,6 +1,7 @@
 export const API_ENDPOINTS = {
 	SPACES: "/api/spaces",
 	MEMORIES: "/api/memories",
+	USERS: "/api/users",
 	SEARCH: "/api/memories/search",
 } as const;
 

@@ -15,9 +15,9 @@ export function Pagination({
 	pagination,
 }: PaginationProps) {
 	return (
-		<>
+		<div className="pt-6">
 			{totalPages > 1 && (
-				<div className="flex justify-center items-center gap-4 mt-6">
+				<div className="flex justify-center items-center gap-4">
 					<Button
 						variant="outline"
 						size="sm"
@@ -39,11 +39,11 @@ export function Pagination({
 					</Button>
 				</div>
 			)}
-			<div className="text-center text-sm text-muted-foreground mt-4">
+			<div className="text-center text-sm text-muted-foreground mt-2">
 				Showing {pagination.offset + 1} to{" "}
 				{Math.min(pagination.offset + pagination.limit, pagination.total)} of{" "}
-				{pagination.total} memories
+				{pagination.total} results
 			</div>
-		</>
+		</div>
 	);
 }

@@ -1,9 +1,17 @@
-import { createProtectedRouter } from "@/lib/create-app";
-import { handleGetCurrentUser, handleUpdateCurrentUser } from "./handlers";
+import { createRouter } from "@/lib/create-app";
+import { auth } from "@/middlewares/auth";
+import {
+	handleCreateUser,
+	handleGetAllUsers,
+	handleUpdateUser,
+} from "./handlers";
 
-const router = createProtectedRouter();
+const router = createRouter();
 
-router.get("/me", handleGetCurrentUser);
-router.patch("/me", handleUpdateCurrentUser);
+router.use("*", auth({ requireAdmin: true }));
+
+router.get("/", handleGetAllUsers);
+router.post("/", handleCreateUser);
+router.patch("/:id", handleUpdateUser);
 
 export default router;
