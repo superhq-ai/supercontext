@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { MainLayout } from "@/components/layouts/main-layout";
 import { Pagination } from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
@@ -33,41 +34,38 @@ export function UserManagementPage() {
 	const {
 		users,
 		pagination,
+		pendingInvites,
+		invitesPagination,
 		isLoading,
 		isCreating,
-		newName,
 		newEmail,
-		newPassword,
-		newRole,
-		setNewName,
+		latestInvite,
 		setNewEmail,
-		setNewPassword,
-		setNewRole,
+		clearLatestInvite,
 		fetchUsers,
-		createUser,
+		fetchPendingInvites,
+		inviteUser,
 		updateUser,
 	} = useUserManagementStore();
 
-	const [isCreateUserModalOpen, setCreateUserModalOpen] = useState(false);
+	const [isInviteUserModalOpen, setInviteUserModalOpen] = useState(false);
 
 	useEffect(() => {
 		if (isAdmin) {
 			fetchUsers();
+			fetchPendingInvites();
 		}
-	}, [isAdmin, fetchUsers]);
+	}, [isAdmin, fetchUsers, fetchPendingInvites]);
 
-	const resetCreateForm = () => {
-		setNewName("");
+	const resetInviteForm = () => {
 		setNewEmail("");
-		setNewRole("user");
-		setNewPassword("");
 	};
 
-	const handleCreate = async () => {
-		await createUser();
+	const handleInvite = async () => {
+		await inviteUser();
 		if (!isCreating) {
-			resetCreateForm();
-			setCreateUserModalOpen(false);
+			resetInviteForm();
+			setInviteUserModalOpen(false);
 		}
 	};
 
@@ -93,10 +91,8 @@ export function UserManagementPage() {
 		fetchUsers(Math.floor(newOffset / pagination.limit) + 1);
 	};
 
-	const paginationInfo = {
-		offset: (pagination.page - 1) * pagination.limit,
-		limit: pagination.limit,
-		total: pagination.totalPages * pagination.limit, // Approximation
+	const handleInvitePageChange = (newOffset: number) => {
+		fetchPendingInvites(Math.floor(newOffset / invitesPagination.limit) + 1);
 	};
 
 	return (
@@ -113,34 +109,24 @@ export function UserManagementPage() {
 					</div>
 					{isAdmin && (
 						<Dialog
-							open={isCreateUserModalOpen}
+							open={isInviteUserModalOpen}
 							onOpenChange={(open) => {
-								if (!open) resetCreateForm();
-								setCreateUserModalOpen(open);
+								if (!open) resetInviteForm();
+								setInviteUserModalOpen(open);
 							}}
 						>
 							<DialogTrigger asChild>
-								<Button>Create User</Button>
+								<Button>Invite User</Button>
 							</DialogTrigger>
 							<DialogContent>
 								<DialogHeader>
-									<DialogTitle>Create New User</DialogTitle>
+									<DialogTitle>Invite New User</DialogTitle>
 									<DialogDescription>
-										Enter the details for the new user.
+										Enter the email address to send an invite. The invite will
+										expire after the specified number of days.
 									</DialogDescription>
 								</DialogHeader>
 								<div className="grid gap-4 py-4">
-									<div className="grid grid-cols-4 items-center gap-4">
-										<Label htmlFor="name" className="text-right">
-											Name
-										</Label>
-										<Input
-											id="name"
-											value={newName}
-											onChange={(e) => setNewName(e.target.value)}
-											className="col-span-3"
-										/>
-									</div>
 									<div className="grid grid-cols-4 items-center gap-4">
 										<Label htmlFor="email" className="text-right">
 											Email
@@ -154,43 +140,62 @@ export function UserManagementPage() {
 										/>
 									</div>
 									<div className="grid grid-cols-4 items-center gap-4">
-										<Label htmlFor="password" className="text-right">
-											Password
+										<Label className="text-right col-span-1">
+											Invite Expiry
 										</Label>
-										<Input
-											id="password"
-											type="password"
-											value={newPassword}
-											onChange={(e) => setNewPassword(e.target.value)}
-											className="col-span-3"
-										/>
-									</div>
-									<div className="grid grid-cols-4 items-center gap-4">
-										<Label htmlFor="role" className="text-right">
-											Role
-										</Label>
-										<Select
-											value={newRole}
-											onValueChange={(value: "user" | "admin") =>
-												setNewRole(value)
-											}
-										>
-											<SelectTrigger className="col-span-3">
-												<SelectValue placeholder="Select a role" />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="user">User</SelectItem>
-												<SelectItem value="admin">Admin</SelectItem>
-											</SelectContent>
-										</Select>
+										<div className="col-span-3 text-muted-foreground">
+											Invites expire in 7 days.
+										</div>
 									</div>
 								</div>
 								<DialogFooter>
-									<Button onClick={handleCreate} disabled={isCreating}>
-										{isCreating ? "Creating..." : "Create User"}
+									<Button onClick={handleInvite} disabled={isCreating}>
+										{isCreating ? "Sending..." : "Send Invite"}
 									</Button>
 								</DialogFooter>
 							</DialogContent>
+							{/* Show invite link after successful invite */}
+							{latestInvite && (
+								<DialogContent>
+									<DialogHeader>
+										<DialogTitle>Invite Link</DialogTitle>
+									</DialogHeader>
+									<div className="py-4">
+										<p>
+											Share this link with the invited user. The invite will
+											expire in 7 days.
+										</p>
+										<div className="flex items-center mt-2">
+											<Input
+												readOnly
+												value={`${window.location.origin}/invite/${latestInvite.token}`}
+												className="mr-2"
+											/>
+											<Button
+												onClick={() => {
+													navigator.clipboard.writeText(
+														`${window.location.origin}/invite/${latestInvite.token}`,
+													);
+													toast.success("Invite link copied to clipboard");
+												}}
+												variant="outline"
+											>
+												Copy Link
+											</Button>
+										</div>
+									</div>
+									<DialogFooter>
+										<Button
+											onClick={() => {
+												clearLatestInvite();
+												setInviteUserModalOpen(false);
+											}}
+										>
+											Close
+										</Button>
+									</DialogFooter>
+								</DialogContent>
+							)}
 						</Dialog>
 					)}
 				</div>
@@ -205,97 +210,159 @@ export function UserManagementPage() {
 						</CardContent>
 					</Card>
 				) : (
-					<Card>
-						<CardHeader>
-							<CardTitle>Users</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<div className="overflow-x-auto">
-								<table className="min-w-full">
-									<thead>
-										<tr className="border-b">
-											<th className="text-left p-4">Name</th>
-											<th className="text-left p-4">Email</th>
-											<th className="text-left p-4">Role</th>
-											<th className="text-left p-4">Status</th>
-											<th className="text-left p-4">Created</th>
-											<th className="text-left p-4">Actions</th>
-										</tr>
-									</thead>
-									<tbody>
-										{isLoading ? (
-											<tr>
-												<td colSpan={6} className="text-center p-4">
-													Loading users...
-												</td>
+					<>
+						<Card className="mb-8">
+							<CardHeader>
+								<CardTitle>Invited Users</CardTitle>
+							</CardHeader>
+							<CardContent>
+								{pendingInvites.length === 0 ? (
+									<p className="text-muted-foreground">No pending invites.</p>
+								) : (
+									<table className="min-w-full">
+										<thead>
+											<tr className="border-b">
+												<th className="text-left p-4">Email</th>
+												<th className="text-left p-4">Expires At</th>
+												<th className="text-left p-4">Actions</th>
 											</tr>
-										) : users.length === 0 ? (
-											<tr>
-												<td colSpan={6} className="text-center p-4">
-													No users found.
-												</td>
-											</tr>
-										) : (
-											users.map((u) => (
-												<tr key={u.id} className="border-b">
-													<td className="p-4">{u.name}</td>
-													<td className="p-4">{u.email}</td>
+										</thead>
+										<tbody>
+											{pendingInvites.map((invite) => (
+												<tr key={invite.id} className="border-b">
+													<td className="p-4">{invite.email}</td>
 													<td className="p-4">
-														<Select
-															value={u.role}
-															onValueChange={(role: "user" | "admin") =>
-																handleRoleChange(u.id, role)
-															}
-														>
-															<SelectTrigger className="w-[100px]">
-																<SelectValue placeholder="Select role" />
-															</SelectTrigger>
-															<SelectContent>
-																<SelectItem value="user">User</SelectItem>
-																<SelectItem value="admin">Admin</SelectItem>
-															</SelectContent>
-														</Select>
+														{new Date(invite.expiresAt).toLocaleDateString()}
 													</td>
 													<td className="p-4">
-														<Badge
-															variant={u.active ? "outline" : "destructive"}
-														>
-															{u.active ? "Active" : "Deactivated"}
-														</Badge>
-													</td>
-													<td className="p-4">
-														{new Date(u.createdAt).toLocaleDateString()}
-													</td>
-													<td className="p-4 space-x-2">
 														<Button
 															size="sm"
-															variant="ghost"
-															onClick={handleToggleActive(u.id)}
-														>
-															{u.active ? "Deactivate" : "Activate"}
-														</Button>
-														<Button
 															variant="outline"
-															size="sm"
-															onClick={() => handleUpdate(u)}
+															onClick={() => {
+																navigator.clipboard.writeText(
+																	`${window.location.origin}/invite/${invite.token}`,
+																);
+																toast.success(
+																	"Invite link copied to clipboard",
+																);
+															}}
 														>
-															Save
+															Copy Link
 														</Button>
 													</td>
 												</tr>
-											))
-										)}
-									</tbody>
-								</table>
-							</div>
-							<Pagination
-								currentPage={pagination.page}
-								totalPages={pagination.totalPages}
-								onPageChange={handlePageChange}
-								pagination={paginationInfo}
-							/>
-						</CardContent>
-					</Card>
+											))}
+										</tbody>
+									</table>
+								)}
+								<Pagination
+									currentPage={
+										Math.floor(
+											invitesPagination.offset / invitesPagination.limit,
+										) + 1
+									}
+									totalPages={Math.ceil(
+										invitesPagination.total / invitesPagination.limit,
+									)}
+									onPageChange={handleInvitePageChange}
+									pagination={invitesPagination}
+								/>
+							</CardContent>
+						</Card>
+						<Card>
+							<CardHeader>
+								<CardTitle>Users</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<div className="overflow-x-auto">
+									<table className="min-w-full">
+										<thead>
+											<tr className="border-b">
+												<th className="text-left p-4">Name</th>
+												<th className="text-left p-4">Email</th>
+												<th className="text-left p-4">Role</th>
+												<th className="text-left p-4">Status</th>
+												<th className="text-left p-4">Created</th>
+												<th className="text-left p-4">Actions</th>
+											</tr>
+										</thead>
+										<tbody>
+											{isLoading ? (
+												<tr>
+													<td colSpan={6} className="text-center p-4">
+														Loading users...
+													</td>
+												</tr>
+											) : users.length === 0 ? (
+												<tr>
+													<td colSpan={6} className="text-center p-4">
+														No users found.
+													</td>
+												</tr>
+											) : (
+												users.map((u) => (
+													<tr key={u.id} className="border-b">
+														<td className="p-4">{u.name}</td>
+														<td className="p-4">{u.email}</td>
+														<td className="p-4">
+															<Select
+																value={u.role}
+																onValueChange={(role: "user" | "admin") =>
+																	handleRoleChange(u.id, role)
+																}
+															>
+																<SelectTrigger className="w-[100px]">
+																	<SelectValue placeholder="Select role" />
+																</SelectTrigger>
+																<SelectContent>
+																	<SelectItem value="user">User</SelectItem>
+																	<SelectItem value="admin">Admin</SelectItem>
+																</SelectContent>
+															</Select>
+														</td>
+														<td className="p-4">
+															<Badge
+																variant={u.active ? "outline" : "destructive"}
+															>
+																{u.active ? "Active" : "Deactivated"}
+															</Badge>
+														</td>
+														<td className="p-4">
+															{new Date(u.createdAt).toLocaleDateString()}
+														</td>
+														<td className="p-4 space-x-2">
+															<Button
+																size="sm"
+																variant="ghost"
+																onClick={handleToggleActive(u.id)}
+															>
+																{u.active ? "Deactivate" : "Activate"}
+															</Button>
+															<Button
+																variant="outline"
+																size="sm"
+																onClick={() => handleUpdate(u)}
+															>
+																Save
+															</Button>
+														</td>
+													</tr>
+												))
+											)}
+										</tbody>
+									</table>
+								</div>
+								<Pagination
+									currentPage={
+										Math.floor(pagination.offset / pagination.limit) + 1
+									}
+									totalPages={Math.ceil(pagination.total / pagination.limit)}
+									onPageChange={handlePageChange}
+									pagination={pagination}
+								/>
+							</CardContent>
+						</Card>
+					</>
 				)}
 			</div>
 		</MainLayout>

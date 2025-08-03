@@ -6,6 +6,7 @@ import {
 	handleDeleteSpace,
 	handleGetSpace,
 	handleListSpaces,
+	handleListSpaceUsers,
 	handleRemoveUserFromSpace,
 	handleUpdateSpace,
 } from "./handlers";
@@ -22,6 +23,7 @@ router.post(
 	auth({ requireAdmin: true }),
 	handleAddUserToSpace,
 );
+router.get("/:spaceId/users", auth(), handleListSpaceUsers);
 router.delete(
 	"/:spaceId/users/:userId",
 	auth({ requireAdmin: true }),

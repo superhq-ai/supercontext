@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CreateSpaceModal } from "@/components/create-space-modal";
 import { MainLayout } from "@/components/layouts/main-layout";
+import { SpaceUserManagementModal } from "@/components/space-user-management-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -148,13 +149,16 @@ export function SpacesPage() {
 												{new Date(space.createdAt).toLocaleDateString()}
 											</Badge>
 											{user?.role === "admin" && (
-												<Button
-													variant="destructive"
-													size="sm"
-													onClick={() => deleteSpace(space.id)}
-												>
-													Delete
-												</Button>
+												<>
+													<SpaceUserManagementModal spaceId={space.id} />
+													<Button
+														variant="destructive"
+														size="sm"
+														onClick={() => deleteSpace(space.id)}
+													>
+														Delete
+													</Button>
+												</>
 											)}
 										</div>
 									</div>

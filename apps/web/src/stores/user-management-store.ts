@@ -3,28 +3,23 @@ import { toast } from "sonner";
 import { create } from "zustand";
 import { API_ENDPOINTS, DEFAULT_PAGINATION } from "@/constants";
 import { fetchWithAuth } from "@/lib/utils";
-import type { User } from "@/types";
+import type { PaginationInfo, PendingInvite, User } from "@/types";
 
 export interface UserManagementStore {
 	users: User[];
-	pagination: {
-		page: number;
-		limit: number;
-		totalPages: number;
-	};
+	pendingInvites: PendingInvite[];
+	pagination: PaginationInfo;
+	invitesPagination: PaginationInfo;
 	isLoading: boolean;
 	isCreating: boolean;
 	error: string | null;
-	newName: string;
 	newEmail: string;
-	newPassword: string;
-	newRole: "user" | "admin";
-	setNewName: (name: string) => void;
+	latestInvite: { email: string; token: string } | null;
 	setNewEmail: (email: string) => void;
-	setNewPassword: (password: string) => void;
-	setNewRole: (role: "user" | "admin") => void;
+	clearLatestInvite: () => void;
 	fetchUsers: (page?: number) => Promise<void>;
-	createUser: () => Promise<void>;
+	fetchPendingInvites: (page?: number) => Promise<void>;
+	inviteUser: () => Promise<void>;
 	updateUser: (
 		id: string,
 		role: "user" | "admin",
@@ -35,44 +30,36 @@ export interface UserManagementStore {
 export const useUserManagementStore = create<UserManagementStore>(
 	(set, get) => ({
 		users: [],
+		pendingInvites: [],
 		pagination: {
-			page: 1,
+			offset: 0,
 			limit: DEFAULT_PAGINATION.LIMIT,
-			totalPages: 1,
+			total: 0,
+		},
+		invitesPagination: {
+			offset: 0,
+			limit: DEFAULT_PAGINATION.LIMIT,
+			total: 0,
 		},
 		isLoading: false,
 		isCreating: false,
 		error: null,
-		newName: "",
 		newEmail: "",
-		newPassword: "",
-		newRole: "user",
-		setNewName: (name) =>
-			set(
-				produce((state) => {
-					state.newName = name;
-				}),
-			),
+		latestInvite: null,
 		setNewEmail: (email) =>
 			set(
 				produce((state) => {
 					state.newEmail = email;
 				}),
 			),
-		setNewPassword: (password) =>
+		clearLatestInvite: () =>
 			set(
 				produce((state) => {
-					state.newPassword = password;
-				}),
-			),
-		setNewRole: (role) =>
-			set(
-				produce((state) => {
-					state.newRole = role;
+					state.latestInvite = null;
 				}),
 			),
 
-		fetchUsers: async (page = get().pagination.page) => {
+		fetchUsers: async (page = 1) => {
 			set(
 				produce((state) => {
 					state.isLoading = true;
@@ -90,15 +77,14 @@ export const useUserManagementStore = create<UserManagementStore>(
 					total: number;
 					page: number;
 					limit: number;
-					totalPages: number;
 				} = await resp.json();
 				set(
 					produce((state) => {
 						state.users = data.users;
 						state.pagination = {
-							page: data.page,
+							offset: (data.page - 1) * data.limit,
 							limit: data.limit,
-							totalPages: data.totalPages,
+							total: data.total,
 						};
 					}),
 				);
@@ -117,9 +103,9 @@ export const useUserManagementStore = create<UserManagementStore>(
 			}
 		},
 
-		createUser: async () => {
-			const { newName, newEmail, newPassword, newRole, pagination } = get();
-			if (!newName || !newEmail || !newPassword) return;
+		inviteUser: async () => {
+			const { newEmail } = get();
+			if (!newEmail) return;
 			set(
 				produce((state) => {
 					state.isCreating = true;
@@ -127,26 +113,25 @@ export const useUserManagementStore = create<UserManagementStore>(
 				}),
 			);
 			try {
-				const resp = await fetchWithAuth(API_ENDPOINTS.USERS, {
+				const resp = await fetchWithAuth(`${API_ENDPOINTS.USERS}/invite`, {
 					method: "POST",
 					body: JSON.stringify({
-						name: newName,
 						email: newEmail,
-						role: newRole,
-						password: newPassword,
 					}),
 				});
-				if (!resp.ok) throw new Error("Failed to create user");
-				await get().fetchUsers(pagination.page);
+				const data = await resp.json();
+				if (!resp.ok) {
+					throw new Error(data?.error || "Failed to create invite");
+				}
 				set(
 					produce((state) => {
-						state.newName = "";
+						state.latestInvite = { email: data.email, token: data.token };
 						state.newEmail = "";
-						state.newPassword = "";
-						state.newRole = "user";
+						state.pendingInvites.unshift(data);
+						state.invitesPagination.total += 1;
 					}),
 				);
-				toast.success("User created successfully");
+				toast.success("Invite generated successfully");
 			} catch (err: unknown) {
 				set(
 					produce((state) => {
@@ -154,7 +139,7 @@ export const useUserManagementStore = create<UserManagementStore>(
 					}),
 				);
 				toast.error(
-					err instanceof Error ? err.message : "Failed to create user",
+					err instanceof Error ? err.message : "Failed to create invite",
 				);
 			} finally {
 				set(
@@ -195,6 +180,49 @@ export const useUserManagementStore = create<UserManagementStore>(
 				);
 				toast.error(
 					err instanceof Error ? err.message : "Failed to update user",
+				);
+			} finally {
+				set(
+					produce((state) => {
+						state.isLoading = false;
+					}),
+				);
+			}
+		},
+		fetchPendingInvites: async (page = 1) => {
+			set(
+				produce((state) => {
+					state.isLoading = true;
+					state.error = null;
+				}),
+			);
+			try {
+				const limit = get().invitesPagination.limit;
+				const resp = await fetchWithAuth(
+					`${API_ENDPOINTS.USERS}/invites?page=${page}&limit=${limit}`,
+				);
+				if (!resp.ok) throw new Error("Failed to fetch pending invites");
+				const data: {
+					invites: PendingInvite[];
+					total: number;
+					page: number;
+					limit: number;
+				} = await resp.json();
+				set(
+					produce((state) => {
+						state.pendingInvites = data.invites;
+						state.invitesPagination = {
+							offset: (data.page - 1) * data.limit,
+							limit: data.limit,
+							total: data.total,
+						};
+					}),
+				);
+			} catch (err: unknown) {
+				set(
+					produce((state) => {
+						state.error = err instanceof Error ? err.message : "Unknown error";
+					}),
 				);
 			} finally {
 				set(

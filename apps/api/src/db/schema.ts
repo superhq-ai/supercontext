@@ -271,3 +271,31 @@ export const memoryAccessLogRelations = relations(
 		}),
 	}),
 );
+
+export const inviteStatusEnum = pgEnum("invite_status", [
+	"pending",
+	"used",
+	"expired",
+]);
+
+export const invite = pgTable("invite", {
+	id: serial("id").primaryKey(),
+	email: text("email").notNull(),
+	token: text("token").notNull().unique(),
+	status: inviteStatusEnum("status").default("pending").notNull(),
+	invitedBy: text("invited_by")
+		.notNull()
+		.references(() => user.id, { onDelete: "set null" }),
+	createdAt: timestamp("created_at")
+		.$defaultFn(() => new Date())
+		.notNull(),
+	expiresAt: timestamp("expires_at").notNull(),
+	usedAt: timestamp("used_at"),
+});
+
+export const inviteRelations = relations(invite, ({ one }) => ({
+	invitedByUser: one(user, {
+		fields: [invite.invitedBy],
+		references: [user.id],
+	}),
+}));

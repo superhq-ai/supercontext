@@ -1,7 +1,13 @@
 import crypto from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { space, userSpace } from "@/db/schema";
+import { space, user, userSpace } from "@/db/schema";
+import {
+	type CursorPaginatedResponse,
+	type CursorPaginationOptions,
+	createCursorPaginatedResponse,
+	normalizeCursorPaginationParams,
+} from "@/lib/cursor-pagination";
 
 // Infer types
 type Space = typeof space.$inferSelect;
@@ -146,11 +152,74 @@ export async function deleteSpace({ spaceId }: DeleteSpaceInput) {
 	return !!result?.rowCount;
 }
 
+export async function listSpaceUsers(
+	spaceId: string,
+	options: CursorPaginationOptions = {},
+): Promise<
+	CursorPaginatedResponse<{
+		id: string;
+		name: string;
+		email: string;
+		createdAt: Date;
+		spaceRole: "owner" | "member";
+	}>
+> {
+	const { limit, cursor } = normalizeCursorPaginationParams(options);
+
+	let whereCondition: ReturnType<typeof eq> | ReturnType<typeof and>;
+
+	if (cursor) {
+		whereCondition = and(
+			eq(userSpace.spaceId, spaceId),
+			or(
+				lt(user.createdAt, new Date(cursor.createdAt)),
+				and(
+					eq(user.createdAt, new Date(cursor.createdAt)),
+					lt(user.id, String(cursor.id)),
+				),
+			),
+		);
+	} else {
+		whereCondition = eq(userSpace.spaceId, spaceId);
+	}
+
+	const users = await db
+		.select({
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			createdAt: user.createdAt,
+			spaceRole: sql<"owner" | "member">`
+               CASE
+                   WHEN ${space.createdBy} = ${user.id} THEN 'owner'
+                   ELSE 'member'
+               END
+           `,
+		})
+		.from(userSpace)
+		.innerJoin(user, eq(user.id, userSpace.userId))
+		.innerJoin(space, eq(space.id, userSpace.spaceId))
+		.where(whereCondition)
+		.orderBy(desc(user.createdAt), desc(user.id))
+		.limit(limit + 1);
+
+	return createCursorPaginatedResponse(users, limit);
+}
+
 // Add a user to a space
 export async function addUserToSpace({
 	spaceId,
 	userIdToAdd,
 }: AddUserToSpaceInput) {
+	const existing = await db.query.userSpace.findFirst({
+		where: (us, { eq, and }) =>
+			and(eq(us.spaceId, spaceId), eq(us.userId, userIdToAdd)),
+	});
+
+	if (existing) {
+		throw new Error("User is already in this space");
+	}
+
 	await db.insert(userSpace).values({
 		userId: userIdToAdd,
 		spaceId,
@@ -163,6 +232,18 @@ export async function removeUserFromSpace({
 	spaceId,
 	userIdToRemove,
 }: RemoveUserFromSpaceInput) {
+	const spaceToRemoveFrom = await db.query.space.findFirst({
+		where: eq(space.id, spaceId),
+	});
+
+	if (!spaceToRemoveFrom) {
+		throw new Error("Space not found");
+	}
+
+	if (spaceToRemoveFrom.createdBy === userIdToRemove) {
+		throw new Error("Cannot remove the owner of the space");
+	}
+
 	const result = await db
 		.delete(userSpace)
 		.where(

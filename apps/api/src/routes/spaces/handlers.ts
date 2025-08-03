@@ -8,6 +8,7 @@ import {
 	deleteSpace,
 	getSpaceWithAccess,
 	listSpacesForUser,
+	listSpaceUsers,
 	removeUserFromSpace,
 	updateSpace,
 } from "./services";
@@ -129,4 +130,17 @@ export async function handleRemoveUserFromSpace(c: Context) {
 		userIdToRemove: userId,
 	});
 	return c.json({ success });
+}
+
+export async function handleListSpaceUsers(c: Context) {
+	const userId = getUserId(c);
+	const spaceId = c.req.param("spaceId");
+	const space = await getSpaceWithAccess({ spaceId, userId });
+	if (!space)
+		throw new HTTPException(404, {
+			message: "Space not found or access denied",
+		});
+
+	const users = await listSpaceUsers(spaceId, c.req.query());
+	return c.json(users);
 }

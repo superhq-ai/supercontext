@@ -22,6 +22,13 @@
       "when": 1754191601111,
       "tag": "0002_curved_pete_wisdom",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1754198304403,
+      "tag": "0003_awesome_supreme_intelligence",
+      "breakpoints": true
     }
   ]
 }

@@ -11,6 +11,7 @@ import { App } from "./App";
 import { AuthProvider } from "./contexts/auth-context";
 import { ThemeProvider } from "./contexts/theme-context";
 
+// biome-ignore lint/style/noNonNullAssertion: We are sure the root element exists.
 const elem = document.getElementById("root")!;
 const root = createRoot(elem);
 

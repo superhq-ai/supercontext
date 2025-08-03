@@ -8,6 +8,15 @@ export interface User {
 	updatedAt: string;
 }
 
+export type PendingInvite = {
+	id: string;
+	email: string;
+	token: string;
+	invitedBy: string;
+	createdAt: string;
+	expiresAt: string;
+};
+
 export interface Memory {
 	id: string;
 	content: string;

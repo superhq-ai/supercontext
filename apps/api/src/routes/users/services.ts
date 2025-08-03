@@ -1,6 +1,7 @@
-import { count, eq } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+import { count, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { user } from "@/db/schema";
+import { invite, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { updateUserRole } from "@/lib/update-user-role";
 
@@ -124,4 +125,165 @@ export async function updateUserProfile({ id, role, active }: UpdateUserInput) {
 	if (!u) return null;
 
 	return u;
+}
+
+type CreateInviteInput = {
+	email: string;
+	invitedBy: string;
+	expiresInDays?: number;
+};
+
+export async function createInvite({
+	email,
+	invitedBy,
+	expiresInDays = 7,
+}: CreateInviteInput) {
+	const token = randomUUID();
+	const now = new Date();
+	const expiresAt = new Date(
+		now.getTime() + expiresInDays * 24 * 60 * 60 * 1000,
+	);
+
+	// Check if invite already exists for this email and is still pending
+	const [existing] = await db
+		.select()
+		.from(invite)
+		.where(sql`${invite.email} = ${email} AND ${invite.status} = 'pending'`)
+		.limit(1);
+
+	if (existing) {
+		throw new Error("An active invite already exists for this email.");
+	}
+
+	const [newInvite] = await db
+		.insert(invite)
+		.values({
+			email,
+			token,
+			status: "pending",
+			invitedBy,
+			createdAt: now,
+			expiresAt,
+		})
+		.returning();
+
+	if (!newInvite) {
+		throw new Error("Failed to create invite");
+	}
+
+	return {
+		id: newInvite.id,
+		email: newInvite.email,
+		token: newInvite.token,
+		status: newInvite.status,
+		invitedBy: newInvite.invitedBy,
+		createdAt: newInvite.createdAt,
+		expiresAt: newInvite.expiresAt,
+	};
+}
+export async function getPendingInvites({
+	page,
+	limit,
+}: {
+	page: number;
+	limit: number;
+}) {
+	const offset = (page - 1) * limit;
+	const [total] = await db
+		.select({ value: count() })
+		.from(invite)
+		.where(sql`${invite.status} = 'pending'`);
+	const invites = await db
+		.select()
+		.from(invite)
+		.where(sql`${invite.status} = 'pending'`)
+		.limit(limit)
+		.offset(offset)
+		.orderBy(invite.createdAt);
+
+	return {
+		invites: invites.map((inv) => ({
+			id: inv.id,
+			email: inv.email,
+			token: inv.token,
+			invitedBy: inv.invitedBy,
+			createdAt: inv.createdAt,
+			expiresAt: inv.expiresAt,
+		})),
+		total: total?.value ?? 0,
+	};
+}
+type AcceptInviteInput = {
+	token: string;
+	name: string;
+	password: string;
+};
+
+export async function acceptInvite({
+	token,
+	name,
+	password,
+}: AcceptInviteInput) {
+	// 1. Find invite by token
+	const [inv] = await db
+		.select()
+		.from(invite)
+		.where(eq(invite.token, token))
+		.limit(1);
+
+	if (!inv) {
+		throw new Error("Invalid invite token");
+	}
+	if (inv.status !== "pending") {
+		throw new Error("Invite is not pending");
+	}
+	if (inv.expiresAt && new Date(inv.expiresAt) < new Date()) {
+		throw new Error("Invite has expired");
+	}
+
+	// 2. Create user with invite email, provided name/password, role: "user"
+	const createdUser = await createUser({
+		email: inv.email,
+		name,
+		role: "user",
+		password,
+	});
+
+	// 3. Mark invite as accepted
+	await db.update(invite).set({ status: "used" }).where(eq(invite.id, inv.id));
+
+	// 4. Return created user
+	return createdUser;
+}
+
+export async function searchUsers(query: string) {
+	const users = await db
+		.select()
+		.from(user)
+		.where(sql`name ILIKE ${`%${query}%`} OR email ILIKE ${`%${query}%`}`)
+		.limit(10);
+
+	return users.map((u) => ({
+		id: u.id,
+		name: u.name,
+		email: u.email,
+	}));
+}
+
+export async function getUserById(userId: string) {
+	const [u] = await db.select().from(user).where(eq(user.id, userId)).limit(1);
+
+	if (!u) return null;
+
+	return {
+		id: u.id,
+		name: u.name,
+		email: u.email,
+		role: u.role,
+		emailVerified: u.emailVerified,
+		image: u.image,
+		createdAt: u.createdAt,
+		updatedAt: u.updatedAt,
+		active: u.active,
+	};
 }
