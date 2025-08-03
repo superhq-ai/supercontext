@@ -49,8 +49,10 @@ server.addTool({
 	name: "add_memories",
 	description: "Adds new memory entries based on user input.",
 	parameters: z.object({
-		text: z.string(),
-		spaceIds: z.array(z.string()),
+		text: z.string().describe("The text content for the new memory entry"),
+		spaceIds: z
+			.array(z.string())
+			.describe("List of space IDs to associate with the memory"),
 	}),
 	execute: async ({ text, spaceIds }, { session }) => {
 		if (!session?.apiKey) throw new Error("API key is missing");
@@ -67,8 +69,10 @@ server.addTool({
 	name: "search_memory",
 	description: "Searches stored memories using a query string.",
 	parameters: z.object({
-		query: z.string(),
-		spaceIds: z.array(z.string()),
+		query: z.string().describe("Search query string used to filter memories"),
+		spaceIds: z
+			.array(z.string())
+			.describe("List of space IDs to constrain the search"),
 	}),
 	execute: async ({ query, spaceIds }, { session }) => {
 		if (!session?.apiKey) throw new Error("API key is missing");
@@ -85,7 +89,9 @@ server.addTool({
 	name: "list_memories",
 	description: "Lists all memories stored for the user.",
 	parameters: z.object({
-		spaceIds: z.array(z.string()),
+		spaceIds: z
+			.array(z.string())
+			.describe("List of space IDs to filter listed memories"),
 	}),
 	execute: async ({ spaceIds }, { session }) => {
 		if (!session?.apiKey) throw new Error("API key is missing");
@@ -104,7 +110,7 @@ server.addTool({
 server.addTool({
 	name: "list_spaces",
 	description: "Lists all spaces accessible to the user.",
-	parameters: z.object({}),
+	parameters: z.object({}).describe("No parameters required for this tool"),
 	execute: async (_args, { session }) => {
 		if (!session?.apiKey) throw new Error("API key is missing");
 		return callApi({

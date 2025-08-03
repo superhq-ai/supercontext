@@ -268,7 +268,7 @@ export function ApiKeysPage() {
 												</div>
 											)}
 											{apiKey.spaces && apiKey.spaces.length > 0 && (
-												<div>
+												<div className="flex flex-wrap gap-2 mt-1">
 													<strong>Spaces:</strong>{" "}
 													{apiKey.spaces.map((space) => (
 														<Badge key={space.id} variant="secondary">

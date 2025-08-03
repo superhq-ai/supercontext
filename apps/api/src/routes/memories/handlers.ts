@@ -1,5 +1,8 @@
+import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { db } from "@/db";
+import { apiKeyToSpace } from "@/db/schema";
 import { getUserId } from "@/lib/get-user-id";
 import { getSpaceWithAccess } from "../spaces/services";
 import {
@@ -24,8 +27,20 @@ async function checkSpaceAccess(c: Context, spaceId: string) {
 		return true;
 	}
 
-	if (apiKey && apiKey.spaceId === spaceId) {
-		return true;
+	if (apiKey) {
+		const [keyToSpace] = await db
+			.select()
+			.from(apiKeyToSpace)
+			.where(
+				and(
+					eq(apiKeyToSpace.apiKeyId, apiKey.id),
+					eq(apiKeyToSpace.spaceId, spaceId),
+				),
+			)
+			.limit(1);
+		if (keyToSpace) {
+			return true;
+		}
 	}
 
 	if (!user) {
