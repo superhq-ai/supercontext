@@ -4,6 +4,7 @@ import {
 	Layers2,
 	LogOutIcon,
 	Menu,
+	Plug,
 	Users,
 	X,
 } from "lucide-react";
@@ -13,6 +14,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { signOut, useAuth } from "@/contexts/auth-context";
 import { ThemeToggle } from "./theme-toggle";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "./ui/tooltip";
 
 export function Navigation() {
 	const { user } = useAuth();
@@ -78,6 +85,17 @@ export function Navigation() {
 									API Keys
 								</Button>
 							</NavLink>
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button variant="ghost" size="sm" className="gap-2">
+											<Plug className="mr-2 h-4 w-4" />
+											Integrations
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Coming Soon</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
 							{user?.role === "admin" && (
 								<NavLink to="/user-management" className={activeLinkStyle}>
 									<Button variant="ghost" size="sm" className="gap-2">
@@ -180,6 +198,21 @@ export function Navigation() {
 								API Keys
 							</Button>
 						</NavLink>
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<Button
+										variant="ghost"
+										size="sm"
+										className="w-full justify-start"
+									>
+										<Plug className="mr-2 h-4 w-4" />
+										Integrations
+									</Button>
+								</TooltipTrigger>
+								<TooltipContent>Coming Soon</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
 						{user?.role === "admin" && (
 							<NavLink
 								to="/user-management"
