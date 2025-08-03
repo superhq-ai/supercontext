@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { cosineDistance, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { memoriesToSpaces, memory, space } from "@/db/schema";
+import { memoriesToSpaces, memory, memoryAccessLog, space } from "@/db/schema";
 import { generateEmbedding } from "@/lib/embedding";
 
 export type CreateMemoryInput = {
@@ -55,6 +55,7 @@ export async function getMemory(memoryId: string) {
 			content: memory.content,
 			metadata: memory.metadata,
 			createdAt: memory.createdAt,
+			userId: memory.userId,
 			spaces: sql<
 				{ id: string; name: string }[]
 			>`json_agg(json_build_object('id', ${space.id}, 'name', ${space.name}))`,
@@ -180,4 +181,42 @@ export async function deleteMemory(memoryId: string) {
 		.where(eq(memory.id, memoryId))
 		.execute();
 	return !!result?.rowCount;
+}
+
+export async function getMemoryLogs({
+	memoryId,
+	limit = 10,
+	offset = 0,
+}: {
+	memoryId: string;
+	limit?: number;
+	offset?: number;
+}) {
+	const logsQuery = db
+		.select({
+			id: memoryAccessLog.id,
+			apiKeyId: memoryAccessLog.apiKeyId,
+			accessedAt: memoryAccessLog.accessedAt,
+		})
+		.from(memoryAccessLog)
+		.where(eq(memoryAccessLog.memoryId, memoryId))
+		.orderBy(desc(memoryAccessLog.accessedAt))
+		.limit(limit)
+		.offset(offset);
+
+	const totalQuery = db
+		.select({ count: sql<number>`count(*)` })
+		.from(memoryAccessLog)
+		.where(eq(memoryAccessLog.memoryId, memoryId));
+
+	const [logs, total] = await Promise.all([logsQuery, totalQuery]);
+
+	return {
+		logs,
+		pagination: {
+			limit,
+			offset,
+			total: total[0]?.count || 0,
+		},
+	};
 }

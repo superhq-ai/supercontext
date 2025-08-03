@@ -15,6 +15,13 @@
       "when": 1754178815075,
       "tag": "0001_giant_sunspot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1754191601111,
+      "tag": "0002_curved_pete_wisdom",
+      "breakpoints": true
     }
   ]
 }

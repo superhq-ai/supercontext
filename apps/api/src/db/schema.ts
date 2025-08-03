@@ -242,3 +242,32 @@ export const memoriesToSpacesRelations = relations(
 		}),
 	}),
 );
+
+// Memory access log table
+export const memoryAccessLog = pgTable("memory_access_log", {
+	id: serial("id").primaryKey(),
+	memoryId: text("memory_id")
+		.notNull()
+		.references(() => memory.id, { onDelete: "cascade" }),
+	apiKeyId: text("api_key_id")
+		.notNull()
+		.references(() => apiKey.id, { onDelete: "cascade" }),
+	accessedAt: timestamp("accessed_at")
+		.$defaultFn(() => new Date())
+		.notNull(),
+});
+
+// Relations for memory access logs
+export const memoryAccessLogRelations = relations(
+	memoryAccessLog,
+	({ one }) => ({
+		memory: one(memory, {
+			fields: [memoryAccessLog.memoryId],
+			references: [memory.id],
+		}),
+		apiKey: one(apiKey, {
+			fields: [memoryAccessLog.apiKeyId],
+			references: [apiKey.id],
+		}),
+	}),
+);

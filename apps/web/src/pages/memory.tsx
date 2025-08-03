@@ -3,18 +3,33 @@ import { useParams } from "react-router";
 import { MainLayout } from "@/components/layouts/main-layout";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
 import { useMemoriesStore } from "@/stores/memories-store";
 
 export const MemoryPage = () => {
 	const { id } = useParams<{ id: string }>();
-	const { currentMemory, isLoading, error, fetchMemoryById } =
-		useMemoriesStore();
+	const {
+		currentMemory,
+		currentMemoryLogs,
+		isLoading,
+		error,
+		fetchMemoryById,
+		fetchMemoryLogs,
+	} = useMemoriesStore();
 
 	useEffect(() => {
 		if (id) {
 			fetchMemoryById(id);
+			fetchMemoryLogs({ id });
 		}
-	}, [id, fetchMemoryById]);
+	}, [id, fetchMemoryById, fetchMemoryLogs]);
 
 	return (
 		<MainLayout>
@@ -23,7 +38,7 @@ export const MemoryPage = () => {
 			{currentMemory && (
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 					<div className="md:col-span-2">
-						<Card>
+						<Card className="h-full">
 							<CardHeader>
 								<CardTitle className="text-2xl">Memory Content</CardTitle>
 							</CardHeader>
@@ -35,7 +50,7 @@ export const MemoryPage = () => {
 						</Card>
 					</div>
 					<div>
-						<Card>
+						<Card className="h-full">
 							<CardHeader>
 								<CardTitle className="text-xl">Details</CardTitle>
 							</CardHeader>
@@ -69,6 +84,37 @@ export const MemoryPage = () => {
 											{JSON.stringify(currentMemory.metadata, null, 2)}
 										</pre>
 									</div>
+								)}
+							</CardContent>
+						</Card>
+					</div>
+					<div className="md:col-span-3">
+						<Card>
+							<CardHeader>
+								<CardTitle className="text-xl">Access Logs</CardTitle>
+							</CardHeader>
+							<CardContent>
+								{currentMemoryLogs.logs.length > 0 ? (
+									<Table>
+										<TableHeader>
+											<TableRow>
+												<TableHead>API Key ID</TableHead>
+												<TableHead>Accessed At</TableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{currentMemoryLogs.logs.map((log) => (
+												<TableRow key={log.id}>
+													<TableCell>{log.apiKeyId}</TableCell>
+													<TableCell>
+														{new Date(log.accessedAt).toLocaleString()}
+													</TableCell>
+												</TableRow>
+											))}
+										</TableBody>
+									</Table>
+								) : (
+									<p>No access logs yet.</p>
 								)}
 							</CardContent>
 						</Card>

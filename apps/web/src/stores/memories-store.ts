@@ -3,11 +3,21 @@ import { toast } from "sonner";
 import { create } from "zustand";
 import { API_ENDPOINTS, DEFAULT_PAGINATION } from "@/constants";
 import { fetchWithAuth } from "@/lib/utils";
-import type { Memory, PaginationInfo, SortOrder, Space } from "@/types";
+import type {
+	Memory,
+	MemoryAccessLog,
+	PaginationInfo,
+	SortOrder,
+	Space,
+} from "@/types";
 
 export interface MemoriesStore {
 	memories: Memory[];
 	currentMemory: Memory | null;
+	currentMemoryLogs: {
+		logs: MemoryAccessLog[];
+		pagination: PaginationInfo;
+	};
 	pagination: PaginationInfo;
 	searchQuery: string;
 	isLoading: boolean;
@@ -44,11 +54,24 @@ export interface MemoriesStore {
 		sortOrder?: SortOrder;
 	}) => Promise<void>;
 	fetchMemoryById: (id: string) => Promise<void>;
+	fetchMemoryLogs: (params: {
+		id: string;
+		limit?: number;
+		offset?: number;
+	}) => Promise<void>;
 }
 
 export const useMemoriesStore = create<MemoriesStore>((set) => ({
 	memories: [],
 	currentMemory: null,
+	currentMemoryLogs: {
+		logs: [],
+		pagination: {
+			limit: 10,
+			offset: 0,
+			total: 0,
+		},
+	},
 	pagination: {
 		limit: DEFAULT_PAGINATION.LIMIT,
 		offset: DEFAULT_PAGINATION.OFFSET,
@@ -327,6 +350,27 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 					state.isLoading = false;
 				}),
 			);
+		}
+	},
+
+	fetchMemoryLogs: async ({ id, limit = 10, offset = 0 }) => {
+		try {
+			const searchParams = new URLSearchParams({
+				limit: String(limit),
+				offset: String(offset),
+			});
+			const response = await fetchWithAuth(
+				`${API_ENDPOINTS.MEMORIES}/${id}/logs?${searchParams}`,
+			);
+			if (!response.ok) throw new Error("Failed to fetch memory logs");
+			const data = await response.json();
+			set(
+				produce((state) => {
+					state.currentMemoryLogs = data;
+				}),
+			);
+		} catch (error) {
+			console.error("Failed to fetch memory logs:", error);
 		}
 	},
 }));

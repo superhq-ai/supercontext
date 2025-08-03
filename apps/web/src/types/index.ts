@@ -18,6 +18,13 @@ export interface Memory {
 	similarity?: number;
 }
 
+export interface MemoryAccessLog {
+	id: number;
+	apiKeyId: string;
+	accessedAt: string;
+	memoryId: string;
+}
+
 export interface Space {
 	id: string;
 	name: string;
