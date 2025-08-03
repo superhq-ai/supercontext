@@ -139,9 +139,7 @@ export function ApiKeysPage() {
 		<MainLayout>
 			<div className="px-4 py-6 sm:px-0">
 				<div className="mb-8">
-					<h1 className="text-3xl font-bold text-foreground mb-2">
-						API Keys Management
-					</h1>
+					<h1 className="text-3xl font-bold text-foreground mb-2">API Keys</h1>
 					<p className="text-muted-foreground">
 						Manage your API keys for programmatic access
 					</p>
