@@ -283,9 +283,9 @@ export const invite = pgTable("invite", {
 	email: text("email").notNull(),
 	token: text("token").notNull().unique(),
 	status: inviteStatusEnum("status").default("pending").notNull(),
-	invitedBy: text("invited_by")
-		.notNull()
-		.references(() => user.id, { onDelete: "set null" }),
+	invitedBy: text("invited_by").references(() => user.id, {
+		onDelete: "set null",
+	}),
 	createdAt: timestamp("created_at")
 		.$defaultFn(() => new Date())
 		.notNull(),

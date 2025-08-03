@@ -129,7 +129,7 @@ export async function updateUserProfile({ id, role, active }: UpdateUserInput) {
 
 type CreateInviteInput = {
 	email: string;
-	invitedBy: string;
+	invitedBy?: string;
 	expiresInDays?: number;
 };
 
