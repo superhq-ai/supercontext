@@ -61,10 +61,10 @@ export function Navigation() {
 						>
 							<img
 								src="/src/logo.svg"
-								alt="SuperContext Logo"
+								alt="supercontext Logo"
 								className="w-8 h-8"
 							/>
-							<span>SuperContext</span>
+							<span>supercontext</span>
 						</NavLink>
 						<div className="hidden md:flex space-x-4">
 							<NavLink to="/memories" className={activeLinkStyle}>
@@ -141,10 +141,10 @@ export function Navigation() {
 						>
 							<img
 								src="/src/logo.svg"
-								alt="SuperContext Logo"
+								alt="supercontext Logo"
 								className="w-8 h-8"
 							/>
-							<span>SuperContext</span>
+							<span>supercontext</span>
 						</NavLink>
 						<Button
 							variant="ghost"

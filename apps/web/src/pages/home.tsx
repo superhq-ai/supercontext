@@ -14,12 +14,12 @@ export function HomePage() {
 						<div className="w-16 h-16 mx-auto mb-4">
 							<img
 								src="/src/logo.svg"
-								alt="SuperContext Logo"
+								alt="supercontext Logo"
 								className="w-full h-full"
 							/>
 						</div>
 						<h1 className="text-3xl font-bold text-foreground mb-2">
-							SuperContext
+							supercontext
 						</h1>
 						<p className="text-muted-foreground">
 							Your intelligent context management platform

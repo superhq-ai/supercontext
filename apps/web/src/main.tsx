@@ -21,5 +21,5 @@ root.render(
 				<App />
 			</AuthProvider>
 		</ThemeProvider>
-	</StrictMode>
+	</StrictMode>,
 );
