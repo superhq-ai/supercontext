@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { ApiKeyModal } from "@/components/api-key-modal";
 import { Navigation } from "@/components/navigation";
 import type { Option } from "@/components/space-selector";
 import { SpaceSelector } from "@/components/space-selector";
@@ -36,6 +37,8 @@ export function ApiKeysPage() {
 	const [isCreating, setIsCreating] = useState(false);
 	const [newKeyName, setNewKeyName] = useState("");
 	const [selectedSpaceIds, setSelectedSpaceIds] = useState<string[]>([]);
+	const [newApiKey, setNewApiKey] = useState<string | null>(null);
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const fetchApiKeys = useCallback(async () => {
 		setIsLoading(true);
@@ -78,8 +81,10 @@ export function ApiKeysPage() {
 			});
 
 			if (response.ok) {
-				const newApiKey = await response.json();
-				setApiKeys([...apiKeys, newApiKey]);
+				const newKey = await response.json();
+				setApiKeys([...apiKeys, newKey]);
+				setNewApiKey(newKey.key);
+				setIsModalOpen(true);
 				setNewKeyName("");
 				setSelectedSpaceIds([]);
 			}
@@ -276,6 +281,14 @@ export function ApiKeysPage() {
 					</div>
 				</div>
 			</main>
+
+			{newApiKey && (
+				<ApiKeyModal
+					apiKey={newApiKey}
+					isOpen={isModalOpen}
+					onClose={() => setIsModalOpen(false)}
+				/>
+			)}
 		</div>
 	);
 }

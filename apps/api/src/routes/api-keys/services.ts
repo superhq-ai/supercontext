@@ -83,6 +83,7 @@ export async function listApiKeys(userId: string) {
 	return rows.map((row) => ({
 		id: row.id,
 		name: row.name,
+		key: `${row.key.slice(0, 8)}${"*".repeat(row.key.length - 8)}`,
 		status: row.status,
 		createdAt: row.createdAt,
 		lastUsedAt: row.lastUsedAt,
