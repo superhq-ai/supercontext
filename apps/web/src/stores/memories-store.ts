@@ -1,4 +1,5 @@
 import { produce } from "immer";
+import { toast } from "sonner";
 import { create } from "zustand";
 import { API_ENDPOINTS, DEFAULT_PAGINATION } from "@/constants";
 import { fetchWithAuth } from "@/lib/utils";
@@ -261,6 +262,7 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 					};
 				}),
 			);
+			toast.success("Memory created successfully");
 		} catch (error: unknown) {
 			const errorMessage =
 				error instanceof Error ? error.message : "An unexpected error occurred";
@@ -272,6 +274,7 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 					};
 				}),
 			);
+			toast.error(errorMessage);
 		} finally {
 			set(
 				produce((state) => {

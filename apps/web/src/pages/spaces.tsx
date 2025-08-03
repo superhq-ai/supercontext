@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Navigation } from "@/components/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,8 +64,10 @@ export function SpacesPage() {
 				setSpaces([...spaces, newSpace]);
 				setNewSpaceName("");
 				setNewSpaceDescription("");
+				toast.success("Space created successfully");
 			}
 		} catch (error) {
+			toast.error("Failed to create space");
 			console.error("Failed to create space:", error);
 		} finally {
 			setIsCreating(false);
@@ -87,6 +90,7 @@ export function SpacesPage() {
 
 			if (response.ok) {
 				setSpaces(spaces.filter((space) => space.id !== spaceId));
+				toast.success("Space deleted successfully");
 			}
 		} catch (error) {
 			console.error("Failed to delete space:", error);

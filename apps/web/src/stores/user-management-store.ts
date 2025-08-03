@@ -1,4 +1,5 @@
 import { produce } from "immer";
+import { toast } from "sonner";
 import { create } from "zustand";
 import { API_ENDPOINTS, DEFAULT_PAGINATION } from "@/constants";
 import { fetchWithAuth } from "@/lib/utils";
@@ -154,11 +155,15 @@ export const useUserManagementStore = create<UserManagementStore>(
 						state.newRole = "user";
 					}),
 				);
+				toast.success("User created successfully");
 			} catch (err: unknown) {
 				set(
 					produce((state) => {
 						state.error = err instanceof Error ? err.message : "Unknown error";
 					}),
+				);
+				toast.error(
+					err instanceof Error ? err.message : "Failed to create user",
 				);
 			} finally {
 				set(
@@ -190,11 +195,15 @@ export const useUserManagementStore = create<UserManagementStore>(
 						);
 					}),
 				);
+				toast.success("User updated successfully");
 			} catch (err: unknown) {
 				set(
 					produce((state) => {
 						state.error = err instanceof Error ? err.message : "Unknown error";
 					}),
+				);
+				toast.error(
+					err instanceof Error ? err.message : "Failed to update user",
 				);
 			} finally {
 				set(
