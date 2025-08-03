@@ -50,15 +50,15 @@ server.addTool({
 	description: "Adds new memory entries based on user input.",
 	parameters: z.object({
 		text: z.string(),
-		spaceId: z.string(),
+		spaceIds: z.array(z.string()),
 	}),
-	execute: async ({ text, spaceId }, { session }) => {
+	execute: async ({ text, spaceIds }, { session }) => {
 		if (!session?.apiKey) throw new Error("API key is missing");
 		return callApi({
 			path: "/memories",
 			method: "POST",
 			apiKey: session.apiKey,
-			body: { content: text, spaceId },
+			body: { content: text, spaceIds },
 		});
 	},
 });
@@ -68,15 +68,15 @@ server.addTool({
 	description: "Searches stored memories using a query string.",
 	parameters: z.object({
 		query: z.string(),
-		spaceId: z.string(),
+		spaceIds: z.array(z.string()),
 	}),
-	execute: async ({ query, spaceId }, { session }) => {
+	execute: async ({ query, spaceIds }, { session }) => {
 		if (!session?.apiKey) throw new Error("API key is missing");
 		return callApi({
 			path: "/memories/search",
 			method: "POST",
 			apiKey: session.apiKey,
-			body: { query, spaceId },
+			body: { query, spaceIds },
 		});
 	},
 });
@@ -85,29 +85,17 @@ server.addTool({
 	name: "list_memories",
 	description: "Lists all memories stored for the user.",
 	parameters: z.object({
-		spaceId: z.string(),
+		spaceIds: z.array(z.string()),
 	}),
-	execute: async ({ spaceId }, { session }) => {
+	execute: async ({ spaceIds }, { session }) => {
 		if (!session?.apiKey) throw new Error("API key is missing");
+		const searchParams = new URLSearchParams();
+		if (spaceIds.length > 0) {
+			spaceIds.forEach((id) => searchParams.append("spaceId", id));
+		}
 		return callApi({
-			path: `/memories?spaceId=${spaceId}`,
+			path: `/memories?${searchParams}`,
 			method: "GET",
-			apiKey: session.apiKey,
-		});
-	},
-});
-
-server.addTool({
-	name: "delete_all_memories",
-	description: "Deletes all memories for the user.",
-	parameters: z.object({
-		spaceId: z.string(),
-	}),
-	execute: async ({ spaceId }, { session }) => {
-		if (!session?.apiKey) throw new Error("API key is missing");
-		return callApi({
-			path: `/memories?spaceId=${spaceId}`,
-			method: "DELETE",
 			apiKey: session.apiKey,
 		});
 	},
