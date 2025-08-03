@@ -1,4 +1,12 @@
-import { LogOutIcon, Menu, X } from "lucide-react";
+import {
+	Database,
+	Key,
+	Layers2,
+	LogOutIcon,
+	Menu,
+	Users,
+	X,
+} from "lucide-react";
 import { useState } from "react";
 import { NavLink } from "react-router";
 import { Badge } from "@/components/ui/badge";
@@ -53,23 +61,27 @@ export function Navigation() {
 						</NavLink>
 						<div className="hidden md:flex space-x-4">
 							<NavLink to="/memories" className={activeLinkStyle}>
-								<Button variant="ghost" size="sm">
+								<Button variant="ghost" size="sm" className="gap-2">
+									<Database className="mr-2 h-4 w-4" />
 									Memories
 								</Button>
 							</NavLink>
 							<NavLink to="/spaces" className={activeLinkStyle}>
-								<Button variant="ghost" size="sm">
+								<Button variant="ghost" size="sm" className="gap-2">
+									<Layers2 className="mr-2 h-4 w-4" />
 									Spaces
 								</Button>
 							</NavLink>
 							<NavLink to="/api-keys" className={activeLinkStyle}>
-								<Button variant="ghost" size="sm">
+								<Button variant="ghost" size="sm" className="gap-2">
+									<Key className="mr-2 h-4 w-4" />
 									API Keys
 								</Button>
 							</NavLink>
 							{user?.role === "admin" && (
 								<NavLink to="/user-management" className={activeLinkStyle}>
-									<Button variant="ghost" size="sm">
+									<Button variant="ghost" size="sm" className="gap-2">
+										<Users className="mr-2 h-4 w-4" />
 										User Management
 									</Button>
 								</NavLink>
@@ -136,6 +148,7 @@ export function Navigation() {
 								size="sm"
 								className="w-full justify-start"
 							>
+								<Database className="mr-2 h-4 w-4" />
 								Memories
 							</Button>
 						</NavLink>
@@ -149,6 +162,7 @@ export function Navigation() {
 								size="sm"
 								className="w-full justify-start"
 							>
+								<Layers2 className="mr-2 h-4 w-4" />
 								Spaces
 							</Button>
 						</NavLink>
@@ -162,6 +176,7 @@ export function Navigation() {
 								size="sm"
 								className="w-full justify-start"
 							>
+								<Key className="mr-2 h-4 w-4" />
 								API Keys
 							</Button>
 						</NavLink>
@@ -176,6 +191,7 @@ export function Navigation() {
 									size="sm"
 									className="w-full justify-start"
 								>
+									<Users className="mr-2 h-4 w-4" />
 									User Management
 								</Button>
 							</NavLink>

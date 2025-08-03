@@ -1,7 +1,5 @@
-import { Link } from "react-router";
 import { MainLayout } from "@/components/layouts/main-layout";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -57,40 +55,6 @@ export function DashboardPage() {
 									</Badge>
 								</div>
 							</div>
-						</CardContent>
-					</Card>
-
-					{/* Quick Actions Card */}
-					<Card>
-						<CardHeader>
-							<CardTitle>Quick Actions</CardTitle>
-							<CardDescription>
-								Access your main tools and features
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="flex flex-col gap-2">
-							<Link to="/memories">
-								<Button className="w-full justify-start" variant="outline">
-									View Memories
-								</Button>
-							</Link>
-							<Link to="/spaces">
-								<Button className="w-full justify-start" variant="outline">
-									Manage Spaces
-								</Button>
-							</Link>
-							<Link to="/api-keys">
-								<Button className="w-full justify-start" variant="outline">
-									API Keys
-								</Button>
-							</Link>
-							{user?.role === "admin" && (
-								<Link to="/user-management">
-									<Button className="w-full justify-start" variant="outline">
-										Manage Users
-									</Button>
-								</Link>
-							)}
 						</CardContent>
 					</Card>
 
