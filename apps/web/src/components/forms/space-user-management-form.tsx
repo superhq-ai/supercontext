@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { API_ENDPOINTS } from "@/constants";
-import { useDebounce } from "@/hooks/use-debounce";
-import { fetchWithAuth } from "@/lib/utils";
 import {
 	Command,
 	CommandEmpty,
 	CommandInput,
 	CommandItem,
 	CommandList,
-} from "./ui/command";
+} from "@/components/ui/command";
+import { API_ENDPOINTS } from "@/constants";
+import { useDebounce } from "@/hooks/use-debounce";
+import { fetchWithAuth } from "@/lib/utils";
 
 interface UserSearchResult {
 	id: string;

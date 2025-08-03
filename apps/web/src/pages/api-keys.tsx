@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { ApiKeyModal } from "@/components/api-key-modal";
-import { CreateApiKeyModal } from "@/components/create-api-key-modal";
 import { MainLayout } from "@/components/layouts/main-layout";
-import type { Option } from "@/components/space-selector";
+import { ApiKeyModal } from "@/components/modals/api-key-modal";
+import { CreateApiKeyModal } from "@/components/modals/create-api-key-modal";
+import type { Option } from "@/components/shared/space-selector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

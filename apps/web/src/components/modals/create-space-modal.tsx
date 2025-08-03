@@ -1,4 +1,4 @@
-import { CreateSpaceForm } from "@/components/create-space-form";
+import { CreateSpaceForm } from "@/components/forms/create-space-form";
 import {
 	Dialog,
 	DialogContent,

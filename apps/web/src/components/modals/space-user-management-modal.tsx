@@ -6,12 +6,10 @@ import {
 	Users,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { fetchWithAuth } from "@/lib/utils";
-import type { User } from "@/types";
-import { SpaceUserManagementForm } from "./space-user-management-form";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { Card, CardContent } from "./ui/card";
+import { SpaceUserManagementForm } from "@/components/forms/space-user-management-form";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -19,8 +17,10 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-} from "./ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { fetchWithAuth } from "@/lib/utils";
+import type { User } from "@/types";
 
 interface SpaceUserManagementModalProps {
 	spaceId: string;

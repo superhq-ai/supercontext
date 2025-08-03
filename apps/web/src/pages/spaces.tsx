@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CreateSpaceModal } from "@/components/create-space-modal";
 import { MainLayout } from "@/components/layouts/main-layout";
-import { SpaceUserManagementModal } from "@/components/space-user-management-modal";
+import { CreateSpaceModal } from "@/components/modals/create-space-modal";
+import { SpaceUserManagementModal } from "@/components/modals/space-user-management-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

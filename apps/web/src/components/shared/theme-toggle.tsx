@@ -1,6 +1,6 @@
-import { Moon, Sun, Monitor } from "lucide-react";
-import { Button } from "./ui/button";
-import { useTheme } from "../contexts/theme-context";
+import { Monitor, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/contexts/theme-context";
+import { Button } from "../ui/button";
 
 export function ThemeToggle() {
 	const { theme, setTheme } = useTheme();
@@ -38,4 +38,4 @@ export function ThemeToggle() {
 			{getIcon()}
 		</Button>
 	);
-} 
+}

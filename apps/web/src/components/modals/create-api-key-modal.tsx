@@ -1,4 +1,4 @@
-import { CreateApiKeyForm } from "@/components/create-api-key-form";
+import { CreateApiKeyForm } from "@/components/forms/create-api-key-form";
 import {
 	Dialog,
 	DialogContent,

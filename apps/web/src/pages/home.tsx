@@ -1,5 +1,5 @@
-import { EmailSignInForm } from "@/components/email-signin-form";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { EmailSignInForm } from "@/components/forms/email-signin-form";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 export function HomePage() {
 	return (

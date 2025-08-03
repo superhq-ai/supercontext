@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SpaceSelector } from "@/components/space-selector";
+import { SpaceSelector } from "@/components/shared/space-selector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 

@@ -1,4 +1,4 @@
-import { Navigation } from "@/components/navigation";
+import { Navigation } from "@/components/shared/navigation";
 
 type Props = {
 	children: React.ReactNode;
