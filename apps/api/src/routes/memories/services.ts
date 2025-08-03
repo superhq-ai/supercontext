@@ -62,9 +62,14 @@ export async function getMemory(memoryId: string) {
 			metadata: memory.metadata,
 			createdAt: memory.createdAt,
 			userId: memory.userId,
-			spaces: sql<
-				{ id: string; name: string }[]
-			>`json_agg(json_build_object('id', ${space.id}, 'name', ${space.name}))`,
+			spaces: sql<{ id: string; name: string }[]>`
+			COALESCE(
+				json_agg(
+					json_build_object('id', ${space.id}, 'name', ${space.name})
+				) FILTER (WHERE ${space.id} IS NOT NULL),
+				'[]'::json
+			)
+		`,
 		})
 		.from(memory)
 		.leftJoin(memoriesToSpaces, eq(memory.id, memoriesToSpaces.memoryId))

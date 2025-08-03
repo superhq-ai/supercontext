@@ -80,6 +80,7 @@ export async function handleCreateMemory(c: Context) {
 export async function handleGetMemory(c: Context) {
 	const memoryId = c.req.param("memoryId");
 	const memory = await getMemory(memoryId);
+	console.log("Fetched memory:", memory);
 	if (!memory) {
 		throw new HTTPException(404, { message: "Memory not found" });
 	}
@@ -90,6 +91,10 @@ export async function handleGetMemory(c: Context) {
 			if (!(await checkSpaceAccess(c, space.id))) {
 				throw new HTTPException(403, { message: "Forbidden" });
 			}
+		}
+	} else {
+		if (!memory.userId || memory.userId !== getUserId(c)) {
+			throw new HTTPException(403, { message: "Forbidden" });
 		}
 	}
 
