@@ -73,7 +73,7 @@ export function DashboardPage() {
 									Access your main tools and features
 								</CardDescription>
 							</CardHeader>
-							<CardContent className="space-y-3">
+							<CardContent className="flex flex-col gap-2">
 								<Link to="/memories">
 									<Button className="w-full justify-start" variant="outline">
 										View Memories
@@ -90,9 +90,9 @@ export function DashboardPage() {
 									</Button>
 								</Link>
 								{user?.role === "admin" && (
-									<Link to="/admin">
+									<Link to="/user-management">
 										<Button className="w-full justify-start" variant="outline">
-											Admin Panel
+											Manage Users
 										</Button>
 									</Link>
 								)}

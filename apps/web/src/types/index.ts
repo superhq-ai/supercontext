@@ -1,3 +1,13 @@
+export interface User {
+	id: string;
+	name: string;
+	email: string;
+	role: "user" | "admin";
+	active: boolean;
+	createdAt: string;
+	updatedAt: string;
+}
+
 export interface Memory {
 	id: string;
 	content: string;

@@ -3,16 +3,7 @@ import { toast } from "sonner";
 import { create } from "zustand";
 import { API_ENDPOINTS, DEFAULT_PAGINATION } from "@/constants";
 import { fetchWithAuth } from "@/lib/utils";
-
-export interface User {
-	id: string;
-	name: string;
-	email: string;
-	role: "user" | "admin";
-	active: boolean;
-	createdAt: string;
-	updatedAt: string;
-}
+import type { User } from "@/types";
 
 export interface UserManagementStore {
 	users: User[];

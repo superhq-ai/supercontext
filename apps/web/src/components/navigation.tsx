@@ -1,6 +1,6 @@
 import { LogOutIcon, Menu, X } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router";
+import { NavLink } from "react-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { signOut, useAuth } from "@/contexts/auth-context";
@@ -19,6 +19,11 @@ export function Navigation() {
 		setIsSidebarOpen(!isSidebarOpen);
 	};
 
+	const activeLinkStyle = ({ isActive }: { isActive: boolean }) =>
+		isActive
+			? "font-bold bg-accent text-accent-foreground rounded-md"
+			: "text-foreground hover:bg-accent hover:text-accent-foreground rounded-md";
+
 	return (
 		<nav className="bg-background border-b border-border">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,8 +39,9 @@ export function Navigation() {
 								{isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
 							</Button>
 						</div>
-						<Link
+						<NavLink
 							to="/dashboard"
+							end
 							className="flex items-center space-x-2 text-xl font-semibold text-foreground"
 						>
 							<img
@@ -44,29 +50,29 @@ export function Navigation() {
 								className="w-8 h-8"
 							/>
 							<span>SuperContext</span>
-						</Link>
+						</NavLink>
 						<div className="hidden md:flex space-x-4">
-							<Link to="/memories">
+							<NavLink to="/memories" className={activeLinkStyle}>
 								<Button variant="ghost" size="sm">
 									Memories
 								</Button>
-							</Link>
-							<Link to="/spaces">
+							</NavLink>
+							<NavLink to="/spaces" className={activeLinkStyle}>
 								<Button variant="ghost" size="sm">
 									Spaces
 								</Button>
-							</Link>
-							<Link to="/api-keys">
+							</NavLink>
+							<NavLink to="/api-keys" className={activeLinkStyle}>
 								<Button variant="ghost" size="sm">
 									API Keys
 								</Button>
-							</Link>
+							</NavLink>
 							{user?.role === "admin" && (
-								<Link to="/user-management">
+								<NavLink to="/user-management" className={activeLinkStyle}>
 									<Button variant="ghost" size="sm">
 										User Management
 									</Button>
-								</Link>
+								</NavLink>
 							)}
 						</div>
 					</div>
@@ -98,7 +104,7 @@ export function Navigation() {
 			>
 				<div className="flex flex-col h-full p-4">
 					<div className="flex items-center justify-between mb-6">
-						<Link
+						<NavLink
 							to="/dashboard"
 							className="flex items-center space-x-2 text-xl font-semibold text-foreground"
 							onClick={() => setIsSidebarOpen(false)}
@@ -109,7 +115,7 @@ export function Navigation() {
 								className="w-8 h-8"
 							/>
 							<span>SuperContext</span>
-						</Link>
+						</NavLink>
 						<Button
 							variant="ghost"
 							size="sm"
@@ -120,7 +126,11 @@ export function Navigation() {
 						</Button>
 					</div>
 					<div className="flex flex-col space-y-2">
-						<Link to="/memories" onClick={() => setIsSidebarOpen(false)}>
+						<NavLink
+							to="/memories"
+							className={activeLinkStyle}
+							onClick={() => setIsSidebarOpen(false)}
+						>
 							<Button
 								variant="ghost"
 								size="sm"
@@ -128,8 +138,12 @@ export function Navigation() {
 							>
 								Memories
 							</Button>
-						</Link>
-						<Link to="/spaces" onClick={() => setIsSidebarOpen(false)}>
+						</NavLink>
+						<NavLink
+							to="/spaces"
+							className={activeLinkStyle}
+							onClick={() => setIsSidebarOpen(false)}
+						>
 							<Button
 								variant="ghost"
 								size="sm"
@@ -137,8 +151,12 @@ export function Navigation() {
 							>
 								Spaces
 							</Button>
-						</Link>
-						<Link to="/api-keys" onClick={() => setIsSidebarOpen(false)}>
+						</NavLink>
+						<NavLink
+							to="/api-keys"
+							className={activeLinkStyle}
+							onClick={() => setIsSidebarOpen(false)}
+						>
 							<Button
 								variant="ghost"
 								size="sm"
@@ -146,10 +164,11 @@ export function Navigation() {
 							>
 								API Keys
 							</Button>
-						</Link>
+						</NavLink>
 						{user?.role === "admin" && (
-							<Link
+							<NavLink
 								to="/user-management"
+								className={activeLinkStyle}
 								onClick={() => setIsSidebarOpen(false)}
 							>
 								<Button
@@ -159,7 +178,7 @@ export function Navigation() {
 								>
 									User Management
 								</Button>
-							</Link>
+							</NavLink>
 						)}
 					</div>
 					<div className="mt-auto flex flex-col space-y-2">
