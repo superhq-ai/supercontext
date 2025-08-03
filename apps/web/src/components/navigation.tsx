@@ -46,11 +46,6 @@ export function Navigation() {
 							<span>SuperContext</span>
 						</Link>
 						<div className="hidden md:flex space-x-4">
-							<Link to="/dashboard">
-								<Button variant="ghost" size="sm">
-									Dashboard
-								</Button>
-							</Link>
 							<Link to="/memories">
 								<Button variant="ghost" size="sm">
 									Memories
@@ -125,15 +120,6 @@ export function Navigation() {
 						</Button>
 					</div>
 					<div className="flex flex-col space-y-2">
-						<Link to="/dashboard" onClick={() => setIsSidebarOpen(false)}>
-							<Button
-								variant="ghost"
-								size="sm"
-								className="w-full justify-start"
-							>
-								Dashboard
-							</Button>
-						</Link>
 						<Link to="/memories" onClick={() => setIsSidebarOpen(false)}>
 							<Button
 								variant="ghost"

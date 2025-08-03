@@ -6,13 +6,7 @@ import { Pagination } from "@/components/pagination";
 import { SpaceSelector } from "@/components/space-selector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -251,113 +245,105 @@ export function MemoriesPage() {
 					</div>
 
 					{/* Search and Controls Section */}
-					<Card className="my-6">
-						<CardHeader>
-							<CardTitle>Search Memories</CardTitle>
-							<CardDescription>
-								Search through your memories using semantic search.
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<div className="space-y-4">
-								{/* Search Bar */}
-								<div className="flex gap-2 items-center max-w-[600px]">
-									<div className="relative flex-1">
-										<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-										<Input
-											placeholder="Enter your search query..."
-											value={searchQuery}
-											onChange={(e) => setSearchQuery(e.target.value)}
-											className="pl-10"
-											onKeyDown={(e) => {
-												if (e.key === "Enter") handleSearch();
-											}}
-										/>
-									</div>
-									<Button onClick={handleSearch} size="sm">
-										Search
-									</Button>
-									{isInSearchMode && (
-										<Button
-											onClick={handleClearSearch}
-											variant="outline"
-											size="sm"
-										>
-											Clear
-										</Button>
-									)}
-								</div>
-								{/* Secondary Controls (Filter and Sort) */}
-								<div className="flex items-center gap-4">
-									<Dialog
-										open={isFilterDialogOpen}
-										onOpenChange={(open) => {
-											if (open) setTempSelectedSpaceIds(selectedSpaceIds);
-											setIsFilterDialogOpen(open);
+					<div className="my-6">
+						<div className="space-y-4">
+							{/* Search Bar */}
+							<div className="flex gap-2 items-center max-w-[600px]">
+								<div className="relative flex-1">
+									<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+									<Input
+										placeholder="Enter your search query..."
+										value={searchQuery}
+										onChange={(e) => setSearchQuery(e.target.value)}
+										className="pl-10"
+										onKeyDown={(e) => {
+											if (e.key === "Enter") handleSearch();
 										}}
-									>
-										<DialogTrigger asChild>
-											<Button
-												variant="ghost"
-												size="sm"
-												className="flex items-center gap-1"
-											>
-												<Filter className="h-4 w-4" />
-												{selectedSpaceIds.length > 0
-													? `${selectedSpaceIds.length} Space${selectedSpaceIds.length > 1 ? "s" : ""}`
-													: "Filter by Space"}
-											</Button>
-										</DialogTrigger>
-										<DialogContent>
-											<DialogHeader>
-												<DialogTitle>Filter Spaces</DialogTitle>
-												<DialogDescription>
-													Select spaces to filter memories.
-												</DialogDescription>
-											</DialogHeader>
-											<SpaceSelector
-												options={spaces.map((s) => ({
-													value: s.id,
-													label: s.name,
-												}))}
-												selected={tempSelectedSpaceIds}
-												onChange={setTempSelectedSpaceIds}
-												mode="multiple"
-											/>
-											<div className="flex justify-end gap-2 pt-4">
-												<Button
-													type="button"
-													variant="outline"
-													onClick={() => {
-														handleApplyFilters([]);
-													}}
-												>
-													Clear Filters
-												</Button>
-												<Button
-													type="button"
-													onClick={() => {
-														handleApplyFilters(tempSelectedSpaceIds);
-													}}
-												>
-													Apply Filters
-												</Button>
-											</div>
-										</DialogContent>
-									</Dialog>
-									<Select value={sortOrder} onValueChange={handleSortChange}>
-										<SelectTrigger className="w-[140px] text-sm">
-											<SelectValue placeholder="Sort by" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="desc">Newest First</SelectItem>
-											<SelectItem value="asc">Oldest First</SelectItem>
-										</SelectContent>
-									</Select>
+									/>
 								</div>
+								<Button onClick={handleSearch} size="sm">
+									Search
+								</Button>
+								{isInSearchMode && (
+									<Button
+										onClick={handleClearSearch}
+										variant="outline"
+										size="sm"
+									>
+										Clear
+									</Button>
+								)}
 							</div>
-						</CardContent>
-					</Card>
+							{/* Secondary Controls (Filter and Sort) */}
+							<div className="flex items-center gap-4">
+								<Dialog
+									open={isFilterDialogOpen}
+									onOpenChange={(open) => {
+										if (open) setTempSelectedSpaceIds(selectedSpaceIds);
+										setIsFilterDialogOpen(open);
+									}}
+								>
+									<DialogTrigger asChild>
+										<Button
+											variant="ghost"
+											size="sm"
+											className="flex items-center gap-1"
+										>
+											<Filter className="h-4 w-4" />
+											{selectedSpaceIds.length > 0
+												? `${selectedSpaceIds.length} Space${selectedSpaceIds.length > 1 ? "s" : ""}`
+												: "Filter by Space"}
+										</Button>
+									</DialogTrigger>
+									<DialogContent>
+										<DialogHeader>
+											<DialogTitle>Filter Spaces</DialogTitle>
+											<DialogDescription>
+												Select spaces to filter memories.
+											</DialogDescription>
+										</DialogHeader>
+										<SpaceSelector
+											options={spaces.map((s) => ({
+												value: s.id,
+												label: s.name,
+											}))}
+											selected={tempSelectedSpaceIds}
+											onChange={setTempSelectedSpaceIds}
+											mode="multiple"
+										/>
+										<div className="flex justify-end gap-2 pt-4">
+											<Button
+												type="button"
+												variant="outline"
+												onClick={() => {
+													handleApplyFilters([]);
+												}}
+											>
+												Clear Filters
+											</Button>
+											<Button
+												type="button"
+												onClick={() => {
+													handleApplyFilters(tempSelectedSpaceIds);
+												}}
+											>
+												Apply Filters
+											</Button>
+										</div>
+									</DialogContent>
+								</Dialog>
+								<Select value={sortOrder} onValueChange={handleSortChange}>
+									<SelectTrigger className="w-[140px] text-sm">
+										<SelectValue placeholder="Sort by" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="desc">Newest First</SelectItem>
+										<SelectItem value="asc">Oldest First</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						</div>
+					</div>
 
 					{/* Error and Memories Display */}
 					{error && (
