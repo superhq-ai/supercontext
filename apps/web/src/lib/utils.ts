@@ -16,14 +16,6 @@ export async function fetchWithAuth(path: string, options: RequestInit = {}) {
 		credentials: "include",
 	};
 
-	console.log(
-		"Fetching:",
-		path,
-		"with options:",
-		newOptions,
-		import.meta.env.VITE_API_URL,
-	);
-
 	const response = await fetch(
 		`${import.meta.env.VITE_API_URL}${path}`,
 		newOptions,
