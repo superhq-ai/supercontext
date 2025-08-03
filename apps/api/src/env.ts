@@ -10,6 +10,7 @@ const envSchema = z.object({
 	BETTER_AUTH_URL: z.string().url().default("http://localhost:3001"),
 	OPENAI_API_KEY: z.string().optional(),
 	GEMINI_API_KEY: z.string().optional(),
+	REDIS_URL: z.string().url(),
 });
 
 export const env = envSchema.parse(process.env);

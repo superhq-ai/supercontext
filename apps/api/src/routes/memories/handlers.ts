@@ -2,8 +2,9 @@ import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { db } from "@/db";
-import { apiKeyToSpace, memoryAccessLog } from "@/db/schema";
+import { apiKeyToSpace } from "@/db/schema";
 import { getUserId } from "@/lib/get-user-id";
+import { addAccessLogJob, addAccessLogJobs } from "@/queues/access-log-queue";
 import { getSpaceWithAccess, listSpacesForUser } from "../spaces/services";
 import {
 	createMemory,
@@ -95,10 +96,7 @@ export async function handleGetMemory(c: Context) {
 	// Log memory access for API key
 	const apiKey = c.get("apiKey");
 	if (apiKey) {
-		await db
-			.insert(memoryAccessLog)
-			.values({ memoryId, apiKeyId: apiKey.id })
-			.execute();
+		await addAccessLogJob({ memoryId, apiKeyId: apiKey.id });
 	}
 	return c.json(memory);
 }
@@ -140,12 +138,12 @@ export async function handleListMemories(c: Context) {
 	});
 	const apiKey = c.get("apiKey");
 	if (apiKey && result.memories) {
-		for (const memory of result.memories) {
-			await db
-				.insert(memoryAccessLog)
-				.values({ memoryId: memory.id, apiKeyId: apiKey.id })
-				.execute();
-		}
+		await addAccessLogJobs(
+			result.memories.map((memory) => ({
+				memoryId: memory.id,
+				apiKeyId: apiKey.id,
+			})),
+		);
 	}
 	return c.json(result);
 }
@@ -179,12 +177,12 @@ export async function handleSearchMemories(c: Context) {
 	});
 	const apiKey = c.get("apiKey");
 	if (apiKey && result) {
-		for (const memory of result.results) {
-			await db
-				.insert(memoryAccessLog)
-				.values({ memoryId: memory.id, apiKeyId: apiKey.id })
-				.execute();
-		}
+		await addAccessLogJobs(
+			result.results.map((memory) => ({
+				memoryId: memory.id,
+				apiKeyId: apiKey.id,
+			})),
+		);
 	}
 	return c.json(result);
 }
