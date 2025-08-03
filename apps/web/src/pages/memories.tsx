@@ -41,6 +41,7 @@ export function MemoriesPage() {
 		creationStatus,
 		newMemoryContent,
 		newMemorySpaceIds,
+		setCreationStatus,
 		setSearchQuery,
 		setSelectedSpaceIds,
 		setSortOrder,
@@ -165,7 +166,7 @@ export function MemoriesPage() {
 						onOpenChange={(open) => {
 							if (!open) {
 								setNewMemorySpaceIds([]);
-								useMemoriesStore.setState({ creationStatus: null });
+								setCreationStatus(null);
 							}
 						}}
 					>
@@ -217,11 +218,7 @@ export function MemoriesPage() {
 								<div className="flex items-center gap-4">
 									<Button
 										onClick={createMemory}
-										disabled={
-											isCreating ||
-											!newMemoryContent.trim() ||
-											newMemorySpaceIds.length === 0
-										}
+										disabled={isCreating || !newMemoryContent.trim()}
 									>
 										{isCreating ? "Creating..." : "Create Memory"}
 									</Button>

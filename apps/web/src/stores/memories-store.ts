@@ -19,6 +19,9 @@ export interface MemoriesStore {
 	creationStatus: { message: string; type: "success" | "error" } | null;
 	newMemoryContent: string;
 	newMemorySpaceIds: string[];
+	setCreationStatus: (
+		status: { message: string; type: "success" | "error" } | null,
+	) => void;
 	setSearchQuery: (query: string) => void;
 	setSelectedSpaceIds: (spaceIds: string[]) => void;
 	setSortOrder: (order: "asc" | "desc") => void;
@@ -61,6 +64,15 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 	creationStatus: null,
 	newMemoryContent: "",
 	newMemorySpaceIds: [],
+
+	setCreationStatus: (
+		status: { message: string; type: "success" | "error" } | null,
+	) =>
+		set(
+			produce((state) => {
+				state.creationStatus = status;
+			}),
+		),
 
 	setSearchQuery: (query) =>
 		set(
@@ -225,7 +237,7 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 	createMemory: async () => {
 		const { newMemoryContent, newMemorySpaceIds, memories } =
 			useMemoriesStore.getState();
-		if (!newMemoryContent.trim() || newMemorySpaceIds.length === 0) return;
+		if (!newMemoryContent.trim()) return;
 
 		set(
 			produce((state) => {
