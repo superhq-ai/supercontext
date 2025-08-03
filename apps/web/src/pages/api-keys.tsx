@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiKeyModal } from "@/components/api-key-modal";
+import { CreateApiKeyModal } from "@/components/create-api-key-modal";
 import { MainLayout } from "@/components/layouts/main-layout";
 import type { Option } from "@/components/space-selector";
-import { SpaceSelector } from "@/components/space-selector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +12,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { fetchWithAuth } from "@/lib/utils";
 
 interface ApiKey {
@@ -35,8 +34,7 @@ export function ApiKeysPage() {
 	const [spaces, setSpaces] = useState<Option[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isCreating, setIsCreating] = useState(false);
-	const [newKeyName, setNewKeyName] = useState("");
-	const [selectedSpaceIds, setSelectedSpaceIds] = useState<string[]>([]);
+	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 	const [newApiKey, setNewApiKey] = useState<string | null>(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -67,16 +65,14 @@ export function ApiKeysPage() {
 		}
 	}, []);
 
-	const createApiKey = async () => {
-		if (!newKeyName.trim()) return;
-
+	const createApiKey = async (name: string, spaceIds: string[]) => {
 		setIsCreating(true);
 		try {
 			const response = await fetchWithAuth("/api/api-keys", {
 				method: "POST",
 				body: JSON.stringify({
-					name: newKeyName,
-					spaceIds: selectedSpaceIds,
+					name,
+					spaceIds,
 				}),
 			});
 
@@ -85,8 +81,7 @@ export function ApiKeysPage() {
 				setApiKeys([...apiKeys, newKey]);
 				setNewApiKey(newKey.key);
 				setIsModalOpen(true);
-				setNewKeyName("");
-				setSelectedSpaceIds([]);
+				setIsCreateModalOpen(false);
 			}
 		} catch (error) {
 			console.error("Failed to create API key:", error);
@@ -153,53 +148,18 @@ export function ApiKeysPage() {
 				</div>
 
 				{/* Create New API Key */}
-				<Card className="mb-6">
-					<CardHeader>
-						<CardTitle>Create New API Key</CardTitle>
-						<CardDescription>
-							Create a new API key for programmatic access to your spaces
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="space-y-4">
-							<div>
-								<label
-									htmlFor="apiKeyName"
-									className="text-sm font-medium text-muted-foreground"
-								>
-									API Key Name
-								</label>
-								<Input
-									id="apiKeyName"
-									placeholder="Enter API key name..."
-									value={newKeyName}
-									onChange={(e) => setNewKeyName(e.target.value)}
-									className="mt-1"
-								/>
-							</div>
-							<div>
-								<label
-									htmlFor="spaceIds"
-									className="text-sm font-medium text-muted-foreground"
-								>
-									Spaces
-								</label>
-								<SpaceSelector
-									options={spaces}
-									selected={selectedSpaceIds}
-									onChange={setSelectedSpaceIds}
-									className="mt-1"
-								/>
-							</div>
-							<Button
-								onClick={createApiKey}
-								disabled={isCreating || !newKeyName.trim()}
-							>
-								{isCreating ? "Creating..." : "Create API Key"}
-							</Button>
-						</div>
-					</CardContent>
-				</Card>
+				<div className="mb-6">
+					<Button onClick={() => setIsCreateModalOpen(true)}>
+						Create New API Key
+					</Button>
+					<CreateApiKeyModal
+						open={isCreateModalOpen}
+						onOpenChange={setIsCreateModalOpen}
+						spaces={spaces}
+						onCreate={createApiKey}
+						isCreating={isCreating}
+					/>
+				</div>
 
 				{/* API Keys List */}
 				<div className="space-y-4">

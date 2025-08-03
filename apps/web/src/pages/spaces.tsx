@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { CreateSpaceModal } from "@/components/create-space-modal";
 import { MainLayout } from "@/components/layouts/main-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/auth-context";
 import { fetchWithAuth } from "@/lib/utils";
 
@@ -27,8 +27,7 @@ export function SpacesPage() {
 	const [spaces, setSpaces] = useState<Space[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isCreating, setIsCreating] = useState(false);
-	const [newSpaceName, setNewSpaceName] = useState("");
-	const [newSpaceDescription, setNewSpaceDescription] = useState("");
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const fetchSpaces = useCallback(async () => {
 		setIsLoading(true);
@@ -46,25 +45,22 @@ export function SpacesPage() {
 		}
 	}, []);
 
-	const createSpace = async () => {
-		if (!newSpaceName.trim()) return;
-
+	const createSpace = async (name: string, description?: string) => {
 		setIsCreating(true);
 		try {
 			const response = await fetchWithAuth("/api/spaces", {
 				method: "POST",
 				body: JSON.stringify({
-					name: newSpaceName,
-					description: newSpaceDescription || undefined,
+					name,
+					description: description || undefined,
 				}),
 			});
 
 			if (response.ok) {
 				const newSpace = await response.json();
 				setSpaces([...spaces, newSpace]);
-				setNewSpaceName("");
-				setNewSpaceDescription("");
 				toast.success("Space created successfully");
+				setIsModalOpen(false);
 			}
 		} catch (error) {
 			toast.error("Failed to create space");
@@ -105,63 +101,22 @@ export function SpacesPage() {
 		<MainLayout>
 			<div className="px-4 py-6 sm:px-0">
 				<div className="mb-8">
-					<h1 className="text-3xl font-bold text-foreground mb-2">
-						Spaces Management
-					</h1>
+					<h1 className="text-3xl font-bold text-foreground mb-2">Spaces</h1>
 					<p className="text-muted-foreground">
 						Manage your spaces and their settings
 					</p>
 				</div>
 
 				{/* Create New Space */}
-				<Card className="mb-6">
-					<CardHeader>
-						<CardTitle>Create New Space</CardTitle>
-						<CardDescription>
-							Create a new space for organizing memories
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<div className="space-y-4">
-							<div>
-								<label
-									htmlFor="spaceName"
-									className="text-sm font-medium text-muted-foreground"
-								>
-									Space Name
-								</label>
-								<Input
-									id="spaceName"
-									placeholder="Enter space name..."
-									value={newSpaceName}
-									onChange={(e) => setNewSpaceName(e.target.value)}
-									className="mt-1"
-								/>
-							</div>
-							<div>
-								<label
-									htmlFor="spaceDescription"
-									className="text-sm font-medium text-muted-foreground"
-								>
-									Description (Optional)
-								</label>
-								<Input
-									id="spaceDescription"
-									placeholder="Enter space description..."
-									value={newSpaceDescription}
-									onChange={(e) => setNewSpaceDescription(e.target.value)}
-									className="mt-1"
-								/>
-							</div>
-							<Button
-								onClick={createSpace}
-								disabled={isCreating || !newSpaceName.trim()}
-							>
-								{isCreating ? "Creating..." : "Create Space"}
-							</Button>
-						</div>
-					</CardContent>
-				</Card>
+				<div className="mb-6">
+					<Button onClick={() => setIsModalOpen(true)}>Create New Space</Button>
+					<CreateSpaceModal
+						open={isModalOpen}
+						onOpenChange={setIsModalOpen}
+						onCreate={createSpace}
+						isCreating={isCreating}
+					/>
+				</div>
 
 				{/* Spaces List */}
 				<div className="space-y-4">
