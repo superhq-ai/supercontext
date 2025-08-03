@@ -23,10 +23,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/auth-context";
-import {
-	type User,
-	useUserManagementStore,
-} from "@/stores/user-management-store";
+import { useUserManagementStore } from "@/stores/user-management-store";
+import type { User } from "@/types";
 
 export function UserManagementPage() {
 	const { user } = useAuth();
