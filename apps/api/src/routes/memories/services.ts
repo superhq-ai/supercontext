@@ -1,7 +1,13 @@
 import crypto from "node:crypto";
-import { cosineDistance, desc, eq, gt, inArray, sql } from "drizzle-orm";
+import { cosineDistance, desc, eq, gt, inArray, or, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { memoriesToSpaces, memory, memoryAccessLog, space } from "@/db/schema";
+import {
+	memoriesToSpaces,
+	memory,
+	memoryAccessLog,
+	space,
+	userSpace,
+} from "@/db/schema";
 import { generateEmbedding } from "@/lib/embedding";
 
 export type CreateMemoryInput = {
@@ -72,18 +78,19 @@ export async function getMemory(memoryId: string) {
 
 export async function listMemories({
 	spaceIds,
+	userId,
 	limit = 50,
 	offset = 0,
 	sortOrder = "desc",
 }: {
 	spaceIds: string[];
+	userId?: string;
 	limit?: number;
 	offset?: number;
 	sortOrder?: "asc" | "desc";
 }) {
 	const query = db.select().from(memory);
 	const totalQuery = db.select({ count: sql<number>`count(*)` }).from(memory);
-
 	if (spaceIds.length > 0) {
 		const subquery = db
 			.select({ memoryId: memoriesToSpaces.memoryId })
@@ -91,6 +98,24 @@ export async function listMemories({
 			.where(inArray(memoriesToSpaces.spaceId, spaceIds));
 		query.where(inArray(memory.id, subquery));
 		totalQuery.where(inArray(memory.id, subquery));
+	} else if (userId) {
+		const userSpaces = db
+			.select({ spaceId: userSpace.spaceId })
+			.from(userSpace)
+			.where(eq(userSpace.userId, userId));
+
+		const memoriesInUserSpaces = db
+			.select({ memoryId: memoriesToSpaces.memoryId })
+			.from(memoriesToSpaces)
+			.where(inArray(memoriesToSpaces.spaceId, userSpaces));
+
+		const condition = or(
+			eq(memory.userId, userId),
+			inArray(memory.id, memoriesInUserSpaces),
+		);
+
+		query.where(condition);
+		totalQuery.where(condition);
 	}
 
 	if (sortOrder) {
@@ -115,6 +140,7 @@ export async function listMemories({
 export type SearchMemoriesInput = {
 	query: string;
 	spaceIds: string[];
+	userId?: string;
 	limit?: number;
 	offset?: number;
 };
@@ -122,6 +148,7 @@ export type SearchMemoriesInput = {
 export async function searchMemories({
 	query,
 	spaceIds,
+	userId,
 	limit = 10,
 	offset = 0,
 }: SearchMemoriesInput) {
@@ -138,6 +165,25 @@ export async function searchMemories({
 			.from(memoriesToSpaces)
 			.where(inArray(memoriesToSpaces.spaceId, spaceIds));
 		conditions.push(inArray(memory.id, subquery));
+	} else if (userId) {
+		const userSpaces = db
+			.select({ spaceId: userSpace.spaceId })
+			.from(userSpace)
+			.where(eq(userSpace.userId, userId));
+
+		const memoriesInUserSpaces = db
+			.select({ memoryId: memoriesToSpaces.memoryId })
+			.from(memoriesToSpaces)
+			.where(inArray(memoriesToSpaces.spaceId, userSpaces));
+
+		const condition = or(
+			eq(memory.userId, userId),
+			inArray(memory.id, memoriesInUserSpaces),
+		);
+
+		if (condition) {
+			conditions.push(condition);
+		}
 	}
 
 	const results = await db

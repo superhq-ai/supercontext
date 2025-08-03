@@ -73,6 +73,20 @@ export const auth = betterAuth({
 					},
 				};
 			}
+			if (ctx.path === "/sign-in/email") {
+				const { email } = ctx.body || {};
+				if (email) {
+					const [user] = await db
+						.select()
+						.from(schema.user)
+						.where(eq(schema.user.email, email));
+					if (user && !user.active) {
+						throw new APIError("UNAUTHORIZED", {
+							message: "Your account has been deactivated.",
+						});
+					}
+				}
+			}
 		}),
 		after: createAuthMiddleware(async (ctx) => {
 			if (ctx.path === "/sign-up/email" && ctx.context.newSession) {

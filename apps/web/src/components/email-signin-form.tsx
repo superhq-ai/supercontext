@@ -1,5 +1,9 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -8,30 +12,45 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { signIn, useAuth } from "@/contexts/auth-context";
+import { signIn } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
+
+const formSchema = z.object({
+	email: z.string().email("Invalid email address").min(1, "Email is required"),
+	password: z.string().min(1, "Password is required"),
+});
 
 export function EmailSignInForm({
 	className,
 	...props
 }: React.ComponentProps<"div">) {
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
-	const { isPending, error } = useAuth();
+	const form = useForm<z.infer<typeof formSchema>>({
+		resolver: zodResolver(formSchema),
+		defaultValues: {
+			email: "",
+			password: "",
+		},
+	});
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const onSubmit = async (values: z.infer<typeof formSchema>) => {
+		setIsLoading(true);
+		const result = await signIn.email(values);
+		setIsLoading(false);
 
-		const result = await signIn.email({
-			email,
-			password,
-		});
-
-		if (!result.error) {
-			// Redirect to dashboard on successful sign in
+		if (result.error) {
+			toast.error(result.error.message);
+		} else {
 			navigate("/dashboard");
 		}
 	};
@@ -46,45 +65,52 @@ export function EmailSignInForm({
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form onSubmit={handleSubmit}>
-						<div className="flex flex-col gap-6">
-							{error && (
-								<div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-									{error.message || "Sign in failed"}
-								</div>
-							)}
-							<div className="grid gap-3">
-								<Label htmlFor="email">Email</Label>
-								<Input
-									id="email"
-									type="email"
-									placeholder="m@example.com"
-									value={email}
-									onChange={(e) => setEmail(e.target.value)}
-									required
-									disabled={isPending}
-								/>
-							</div>
-							<div className="grid gap-3">
-								<div className="flex items-center">
-									<Label htmlFor="password">Password</Label>
-								</div>
-								<Input
-									id="password"
-									type="password"
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-									required
-									disabled={isPending}
-								/>
-							</div>
-							<div className="flex flex-col gap-3">
-								<Button type="submit" className="w-full" disabled={isPending}>
-									{isPending ? "Signing in..." : "Login"}
-								</Button>
-							</div>
-						</div>
-					</form>
+					<Form {...form}>
+						<form
+							onSubmit={form.handleSubmit(onSubmit)}
+							className="flex flex-col gap-6"
+						>
+							<FormField
+								control={form.control}
+								name="email"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Email</FormLabel>
+										<FormControl>
+											<Input
+												type="email"
+												placeholder="m@example.com"
+												{...field}
+												disabled={isLoading}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="password"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Password</FormLabel>
+										<FormControl>
+											<Input
+												type="password"
+												placeholder="********"
+												{...field}
+												disabled={isLoading}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<Button type="submit" className="w-full" disabled={isLoading}>
+								{isLoading ? "Signing in..." : "Login"}
+							</Button>
+						</form>
+					</Form>
 				</CardContent>
 			</Card>
 		</div>

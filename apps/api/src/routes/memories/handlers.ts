@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { apiKeyToSpace } from "@/db/schema";
 import { getUserId } from "@/lib/get-user-id";
 import { addAccessLogJob, addAccessLogJobs } from "@/queues/access-log-queue";
-import { getSpaceWithAccess, listSpacesForUser } from "../spaces/services";
+import { getSpaceWithAccess } from "../spaces/services";
 import {
 	createMemory,
 	deleteMemory,
@@ -102,13 +102,8 @@ export async function handleGetMemory(c: Context) {
 }
 
 export async function handleListMemories(c: Context) {
-	let spaceId = c.req.queries("spaceId") || [];
+	const spaceId = c.req.queries("spaceId") || [];
 	const userId = getUserId(c);
-
-	if (spaceId.length === 0) {
-		const userSpaces = await listSpacesForUser(userId);
-		spaceId = userSpaces.map((s) => s.id);
-	}
 	const limit = parseInt(c.req.query("limit") || "50");
 	const offset = parseInt(c.req.query("offset") || "0");
 	const sortOrder = c.req.query("sortOrder") || "desc";
@@ -132,6 +127,7 @@ export async function handleListMemories(c: Context) {
 
 	const result = await listMemories({
 		spaceIds: parse.data.spaceId,
+		userId,
 		limit: parse.data.limit,
 		offset: parse.data.offset,
 		sortOrder: parse.data.sortOrder,
@@ -155,12 +151,8 @@ export async function handleSearchMemories(c: Context) {
 		return c.json({ error: "Invalid input", details: parse.error.errors }, 400);
 	}
 
-	let spaceIds = parse.data.spaceId;
-	if (spaceIds.length === 0) {
-		const userId = getUserId(c);
-		const userSpaces = await listSpacesForUser(userId);
-		spaceIds = userSpaces.map((s) => s.id);
-	}
+	const spaceIds = parse.data.spaceId;
+	const userId = getUserId(c);
 
 	for (const spaceId of spaceIds) {
 		const hasAccess = await checkSpaceAccess(c, spaceId);
@@ -171,7 +163,8 @@ export async function handleSearchMemories(c: Context) {
 
 	const result = await searchMemories({
 		query: parse.data.query,
-		spaceIds: spaceIds,
+		spaceIds,
+		userId,
 		limit: parse.data.limit,
 		offset: parse.data.offset,
 	});
