@@ -4,6 +4,7 @@ import { PublicRoute } from "./components/auth/public-route";
 import { ApiKeysPage } from "./pages/api-keys";
 import { DashboardPage } from "./pages/dashboard";
 import { HomePage } from "./pages/home";
+import { InvitedUserSignupPage } from "./pages/invited-user-signup";
 import { MemoriesPage } from "./pages/memories";
 import { MemoryPage } from "./pages/memory";
 import NotFoundPage from "./pages/not-found";
@@ -18,6 +19,10 @@ export const router = createBrowserRouter([
 			{
 				index: true,
 				element: <HomePage />,
+			},
+			{
+				path: "invite/:inviteToken",
+				element: <InvitedUserSignupPage />,
 			},
 		],
 	},

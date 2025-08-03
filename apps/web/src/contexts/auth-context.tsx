@@ -1,4 +1,5 @@
 import type { Session, User } from "better-auth";
+import { inferAdditionalFields } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import { createContext, useContext } from "react";
 
@@ -9,9 +10,21 @@ interface AuthUser extends User {
 
 export const authClient = createAuthClient({
 	baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001",
+	plugins: [
+		inferAdditionalFields({
+			user: {
+				inviteToken: { type: "string", required: false },
+			},
+		}),
+	],
 });
 
-export const { signIn, signOut, useSession: useBetterAuthSession } = authClient;
+export const {
+	signIn,
+	signUp,
+	signOut,
+	useSession: useBetterAuthSession,
+} = authClient;
 
 interface AuthContextType {
 	session: Session | null;

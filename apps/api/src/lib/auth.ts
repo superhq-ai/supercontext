@@ -1,5 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { APIError, createAuthMiddleware } from "better-auth/api";
+import { and, eq, gt } from "drizzle-orm";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 import { env } from "@/env";
@@ -31,5 +33,60 @@ export const auth = betterAuth({
 	},
 	emailAndPassword: {
 		enabled: true,
+	},
+	hooks: {
+		before: createAuthMiddleware(async (ctx) => {
+			if (ctx.path === "/sign-up/email") {
+				const { email, inviteToken } = ctx.body || {};
+				if (!inviteToken) {
+					throw new APIError("BAD_REQUEST", {
+						message: "Invite token is required",
+					});
+				}
+
+				const invite = await db
+					.select()
+					.from(schema.invite)
+					.where(
+						and(
+							eq(schema.invite.token, inviteToken),
+							eq(schema.invite.status, "pending"),
+							eq(schema.invite.email, email),
+							gt(schema.invite.expiresAt, new Date()),
+						),
+					)
+					.limit(1);
+
+				if (!invite || invite.length === 0) {
+					throw new APIError("BAD_REQUEST", {
+						message: "Invalid, used, or expired invite token",
+					});
+				}
+
+				return {
+					context: {
+						...ctx,
+						body: {
+							...ctx.body,
+							inviteId: invite[0]?.id,
+						},
+					},
+				};
+			}
+		}),
+		after: createAuthMiddleware(async (ctx) => {
+			if (ctx.path === "/sign-up/email" && ctx.context.newSession) {
+				const { inviteId } = ctx.body || {};
+				if (inviteId) {
+					await db
+						.update(schema.invite)
+						.set({
+							status: "used",
+							usedAt: new Date(),
+						})
+						.where(eq(schema.invite.id, inviteId));
+				}
+			}
+		}),
 	},
 });
