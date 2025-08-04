@@ -1,0 +1,139 @@
+version: '3.8'
+
+services:
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: supercontext-postgres
+    environment:
+      POSTGRES_DB: supercontext
+      POSTGRES_USER: supercontext
+      POSTGRES_PASSWORD: supercontext_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./apps/api/drizzle:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supercontext -d supercontext"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - supercontext-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: supercontext-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - supercontext-network
+
+  # API Service
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: base
+    container_name: supercontext-api
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://supercontext:supercontext_password@postgres:5432/supercontext
+      SUPERCONTEXT_CLIENT_URL: http://localhost:3000
+      BETTER_AUTH_SECRET: your_development_secret_key_change_in_production
+      BETTER_AUTH_URL: http://localhost:3001
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./apps/api:/app
+      - ./packages:/app/packages
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - supercontext-network
+    command: bun run dev
+
+  # WebService
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: base
+    container_name: supercontext-web
+    environment:
+      VITE_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/web:/app
+      - ./packages:/app/packages
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - supercontext-network
+    command: bun run dev
+
+  # MCP 
+  mcp:
+    build:
+      context: .
+      dockerfile: apps/mcp/Dockerfile
+      target: base
+    container_name: supercontext-mcp
+    environment:
+      API_URL: http://api:3001/api
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./apps/mcp:/app
+      - ./packages:/app/packages
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - supercontext-network
+    command: bun run dev
+
+  # Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: supercontext-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - web
+      - api
+    networks:
+      - supercontext-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  supercontext-network:
+    driver: bridge 
