@@ -1,16 +1,19 @@
 
 FROM oven/bun:1 as base
 
-WORKDIR /app
+WORKDIR /workspace/apps/web
 
-COPY package.json ./
-COPY ../../package.json ../../bun.lock ../../
-COPY ../utils/package.json ../utils/
 
-RUN bun install --frozen-lockfile
+COPY package.json bun.lock /workspace/
+COPY tsconfig.json /workspace/
 
-COPY . .
-COPY ../utils ../utils
+COPY packages /workspace/packages
+
+COPY apps/web/package.json ./
+COPY apps/web ./
+
+
+RUN cd /workspace && bun install
 
 FROM base as builder
 

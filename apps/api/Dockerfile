@@ -1,15 +1,17 @@
 FROM oven/bun:1 as base
 
-WORKDIR /app
+WORKDIR /workspace
 
-COPY package.json ./
-COPY ../../package.json ../../bun.lock ../../
-COPY ../utils/package.json ../utils/
+# Copy root package files
+COPY package.json bun.lock tsconfig.json ./
 
-RUN bun install --frozen-lockfile
+# Copy workspace structure
+COPY packages/ ./packages/
+COPY apps/api/ ./apps/api/
 
-COPY . .
-COPY ../utils ../utils
+WORKDIR /workspace/apps/api
+
+RUN bun install
 
 FROM base as builder
 
@@ -17,20 +19,24 @@ RUN bun run build
 
 FROM oven/bun:1-alpine as production
 
-WORKDIR /app
+WORKDIR /workspace
 
-COPY --from=builder /app/dist ./dist
+# Copy built files
+COPY --from=builder /workspace/apps/api/dist ./apps/api/dist
 
-COPY package.json ./
-COPY ../../package.json ../../bun.lock ../../
-COPY ../utils/package.json ../utils/
+# Copy package files
+COPY package.json bun.lock tsconfig.json ./
+COPY packages/ ./packages/
+COPY apps/api/package.json ./apps/api/
 
-RUN bun install --frozen-lockfile --production
+WORKDIR /workspace/apps/api
+
+RUN bun install --production
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S bun -u 1001
 
-RUN chown -R bun:nodejs /app
+RUN chown -R bun:nodejs /workspace
 USER bun
 
 EXPOSE 3001

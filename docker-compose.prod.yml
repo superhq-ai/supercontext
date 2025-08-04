@@ -1,7 +1,7 @@
 services:
   # PostgreSQL
   postgres:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     container_name: supercontext-postgres-prod
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-supercontext}
@@ -45,15 +45,8 @@ services:
       dockerfile: apps/api/Dockerfile
       target: production
     container_name: supercontext-api-prod
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: ${DATABASE_URL}
-      SUPERCONTEXT_CLIENT_URL: ${SUPERCONTEXT_CLIENT_URL}
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
-      REDIS_URL: ${REDIS_URL}
+    env_file:
+      - apps/api/.env
     ports:
       - "3001:3001"
     depends_on:
@@ -78,8 +71,8 @@ services:
       dockerfile: apps/web/Dockerfile
       target: production
     container_name: supercontext-web-prod
-    environment:
-      VITE_API_URL: ${VITE_API_URL}
+    env_file:
+      - apps/web/.env
     ports:
       - "3000:80"
     depends_on:
@@ -94,28 +87,7 @@ services:
         reservations:
           memory: 128M
 
-  # MCP
-  mcp:
-    build:
-      context: .
-      dockerfile: apps/mcp/Dockerfile
-      target: production
-    container_name: supercontext-mcp-prod
-    environment:
-      API_URL: ${MCP_API_URL}
-    ports:
-      - "3002:3002"
-    depends_on:
-      - api
-    networks:
-      - supercontext-network
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
+
 
   # Nginx
   nginx:
