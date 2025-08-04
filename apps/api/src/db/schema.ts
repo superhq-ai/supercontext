@@ -34,7 +34,11 @@ export const user = pgTable("user", {
 	updatedAt: timestamp("updated_at")
 		.$defaultFn(() => new Date())
 		.notNull(),
-});
+}, (table) => ({
+	userEmailIndex: index("user_email_index").on(table.email),
+	userRoleIndex: index("user_role_index").on(table.role),
+	userActiveIndex: index("user_active_index").on(table.active),
+}));
 
 export const session = pgTable("session", {
 	id: text("id").primaryKey(),
@@ -47,7 +51,11 @@ export const session = pgTable("session", {
 	userId: text("user_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
-});
+}, (table) => ({
+	sessionUserIdIndex: index("session_user_id_index").on(table.userId),
+	sessionExpiresAtIndex: index("session_expires_at_index").on(table.expiresAt),
+	sessionTokenIndex: index("session_token_index").on(table.token),
+}));
 
 export const account = pgTable("account", {
 	id: text("id").primaryKey(),
@@ -65,7 +73,11 @@ export const account = pgTable("account", {
 	password: text("password"),
 	createdAt: timestamp("created_at").notNull(),
 	updatedAt: timestamp("updated_at").notNull(),
-});
+}, (table) => ({
+	accountUserIdIndex: index("account_user_id_index").on(table.userId),
+	accountProviderIdIndex: index("account_provider_id_index").on(table.providerId),
+	accountAccountIdIndex: index("account_account_id_index").on(table.accountId),
+}));
 
 export const verification = pgTable("verification", {
 	id: text("id").primaryKey(),
@@ -74,7 +86,11 @@ export const verification = pgTable("verification", {
 	expiresAt: timestamp("expires_at").notNull(),
 	createdAt: timestamp("created_at").$defaultFn(() => new Date()),
 	updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
-});
+}, (table) => ({
+	verificationIdentifierIndex: index("verification_identifier_index").on(table.identifier),
+	verificationValueIndex: index("verification_value_index").on(table.value),
+	verificationExpiresAtIndex: index("verification_expires_at_index").on(table.expiresAt),
+}));
 
 // Spaces table
 export const space = pgTable("space", {
@@ -90,7 +106,11 @@ export const space = pgTable("space", {
 	createdBy: text("created_by")
 		.notNull()
 		.references(() => user.id, { onDelete: "restrict" }),
-});
+}, (table) => ({
+	spaceCreatedByIndex: index("space_created_by_index").on(table.createdBy),
+	spaceCreatedAtIndex: index("space_created_at_index").on(table.createdAt),
+	spaceNameIndex: index("space_name_index").on(table.name),
+}));
 
 // User-Space relationship (many-to-many)
 export const userSpace = pgTable("user_space", {
@@ -104,7 +124,12 @@ export const userSpace = pgTable("user_space", {
 	createdAt: timestamp("created_at")
 		.$defaultFn(() => new Date())
 		.notNull(),
-});
+}, (table) => ({
+	userSpaceUserIdIndex: index("user_space_user_id_index").on(table.userId),
+	userSpaceSpaceIdIndex: index("user_space_space_id_index").on(table.spaceId),
+	userSpaceCompositeIndex: index("user_space_composite_index").on(table.userId, table.spaceId),
+	userSpaceCreatedAtIndex: index("user_space_created_at_index").on(table.createdAt),
+}));
 
 // API Keys table
 export const apiKey = pgTable("api_key", {
@@ -122,7 +147,12 @@ export const apiKey = pgTable("api_key", {
 		.$defaultFn(() => new Date())
 		.notNull(),
 	lastUsedAt: timestamp("last_used_at"),
-});
+}, (table) => ({
+	apiKeyUserIdIndex: index("api_key_user_id_index").on(table.userId),
+	apiKeyStatusIndex: index("api_key_status_index").on(table.status),
+	apiKeyCreatedAtIndex: index("api_key_created_at_index").on(table.createdAt),
+	apiKeyLastUsedAtIndex: index("api_key_last_used_at_index").on(table.lastUsedAt),
+}));
 
 // Memory table
 export const memory = pgTable(
@@ -152,6 +182,11 @@ export const memory = pgTable(
 			"hnsw",
 			table.embedding.op("vector_cosine_ops"),
 		),
+		memoryUserIdIndex: index("memory_user_id_index").on(table.userId),
+		memoryApiKeyIdIndex: index("memory_api_key_id_index").on(table.apiKeyId),
+		memoryCreatedAtIndex: index("memory_created_at_index").on(table.createdAt),
+		memoryUpdatedAtIndex: index("memory_updated_at_index").on(table.updatedAt),
+		memoryUserCreatedAtIndex: index("memory_user_created_at_index").on(table.userId, table.createdAt),
 	}),
 );
 
@@ -195,7 +230,11 @@ export const apiKeyToSpace = pgTable("api_key_to_space", {
 	spaceId: text("space_id")
 		.notNull()
 		.references(() => space.id, { onDelete: "cascade" }),
-});
+}, (table) => ({
+	apiKeyToSpaceApiKeyIdIndex: index("api_key_to_space_api_key_id_index").on(table.apiKeyId),
+	apiKeyToSpaceSpaceIdIndex: index("api_key_to_space_space_id_index").on(table.spaceId),
+	apiKeyToSpaceCompositeIndex: index("api_key_to_space_composite_index").on(table.apiKeyId, table.spaceId),
+}));
 
 export const apiKeyToSpaceRelations = relations(apiKeyToSpace, ({ one }) => ({
 	apiKey: one(apiKey, {
@@ -215,7 +254,11 @@ export const memoriesToSpaces = pgTable("memories_to_spaces", {
 	spaceId: text("space_id")
 		.notNull()
 		.references(() => space.id, { onDelete: "cascade" }),
-});
+}, (table) => ({
+	memoriesToSpacesMemoryIdIndex: index("memories_to_spaces_memory_id_index").on(table.memoryId),
+	memoriesToSpacesSpaceIdIndex: index("memories_to_spaces_space_id_index").on(table.spaceId),
+	memoriesToSpacesCompositeIndex: index("memories_to_spaces_composite_index").on(table.memoryId, table.spaceId),
+}));
 
 export const memoryRelations = relations(memory, ({ one, many }) => ({
 	user: one(user, {
@@ -255,7 +298,12 @@ export const memoryAccessLog = pgTable("memory_access_log", {
 	accessedAt: timestamp("accessed_at")
 		.$defaultFn(() => new Date())
 		.notNull(),
-});
+}, (table) => ({
+	memoryAccessLogMemoryIdIndex: index("memory_access_log_memory_id_index").on(table.memoryId),
+	memoryAccessLogApiKeyIdIndex: index("memory_access_log_api_key_id_index").on(table.apiKeyId),
+	memoryAccessLogAccessedAtIndex: index("memory_access_log_accessed_at_index").on(table.accessedAt),
+	memoryAccessLogMemoryAccessedIndex: index("memory_access_log_memory_accessed_index").on(table.memoryId, table.accessedAt),
+}));
 
 // Relations for memory access logs
 export const memoryAccessLogRelations = relations(
@@ -291,7 +339,15 @@ export const invite = pgTable("invite", {
 		.notNull(),
 	expiresAt: timestamp("expires_at").notNull(),
 	usedAt: timestamp("used_at"),
-});
+}, (table) => ({
+	inviteEmailIndex: index("invite_email_index").on(table.email),
+	inviteTokenIndex: index("invite_token_index").on(table.token),
+	inviteStatusIndex: index("invite_status_index").on(table.status),
+	inviteInvitedByIndex: index("invite_invited_by_index").on(table.invitedBy),
+	inviteCreatedAtIndex: index("invite_created_at_index").on(table.createdAt),
+	inviteExpiresAtIndex: index("invite_expires_at_index").on(table.expiresAt),
+	inviteStatusExpiresIndex: index("invite_status_expires_index").on(table.status, table.expiresAt),
+}));
 
 export const inviteRelations = relations(invite, ({ one }) => ({
 	invitedByUser: one(user, {
