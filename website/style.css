@@ -144,17 +144,6 @@ footer {
 	font-size: 0.9rem;
 }
 
-.social-links a {
-	color: hsl(var(--muted-foreground));
-	text-decoration: none;
-	margin-left: 1rem;
-	transition: color 0.2s ease;
-}
-
-.social-links a:hover {
-	color: hsl(var(--foreground));
-}
-
 .logo-container {
 	display: flex;
 	align-items: center;
@@ -203,11 +192,13 @@ h1.logo {
 	border-radius: var(--radius);
 	padding: 0.75rem 1rem;
 	margin-bottom: 0.5rem;
+	transition: all 0.2s ease;
 }
 
 .memory-item:hover {
 	opacity: 1;
 	background: hsl(var(--accent));
+	border-color: hsl(var(--primary));
 }
 
 .memory-header {
@@ -267,23 +258,110 @@ h1.logo {
 	margin-right: 0.25rem;
 }
 
+#svg-logo {
+	transition: transform 0.3s ease;
+}
+
+a.logo-link {
+	display: flex;
+	align-items: center;
+	text-decoration: none;
+	font-family: sans-serif;
+	font-weight: bold;
+	font-size: 24px;
+	color: #fff;
+	width: min-content;
+}
+
+a.logo-link:hover #svg-logo {
+	transform: rotate(360deg);
+}
+
+.social-links a {
+	color: hsl(var(--muted-foreground));
+	text-decoration: none;
+	margin-left: 1rem;
+	transition: all 0.2s ease;
+	position: relative;
+}
+
+.social-links a::after {
+	content: "";
+	position: absolute;
+	bottom: -2px;
+	left: 0;
+	width: 0;
+	height: 1px;
+	background: hsl(var(--foreground));
+	transition: width 0.3s ease;
+}
+
+.social-links a:hover {
+	color: hsl(var(--foreground));
+	transform: translateY(-1px);
+}
+
+.social-links a:hover::after {
+	width: 100%;
+}
+
 @media (max-width: 1024px) {
-	.container {
-		flex-direction: column;
-		height: auto;
-		margin: 0;
-		border: none;
+	body {
+		overflow-x: hidden;
+		overflow-y: auto;
 	}
 
-	.left-section {
-		border-right: none;
+	.container {
+		flex-direction: column;
+		height: 100vh;
+		margin: 0;
+		border: none;
+		position: relative;
+	}
+
+	header {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 1000;
+		background: hsl(var(--background));
 		border-bottom: 1px solid hsl(var(--border));
-		min-height: 50vh;
 		padding: 1rem;
 	}
 
+	.left-section {
+		position: fixed;
+		top: 80px;
+		left: 0;
+		right: 0;
+		height: calc(100vh - 80px);
+		border: none;
+		padding: 1rem;
+		z-index: 1;
+		pointer-events: none;
+	}
+
+	.memory-feed {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 90%;
+		height: 60%;
+		pointer-events: auto;
+		z-index: 2;
+		padding: 0;
+	}
+
 	.right-section {
-		padding: 1.5rem;
+		position: relative;
+		z-index: 100;
+		background: hsl(var(--background));
+		margin-top: 100vh;
+		min-height: 100vh;
+		padding: 2rem 1.5rem;
+		border-top: 1px solid hsl(var(--border));
 	}
 
 	.hero-title {
@@ -316,12 +394,11 @@ h1.logo {
 	}
 
 	.fig {
-		display: none;
-	}
-
-	.memory-feed {
-		width: 100%;
-		padding: 0 1rem;
+		position: absolute;
+		bottom: -5rem;
+		right: -5rem;
+		z-index: 0;
+		opacity: 0.3;
 	}
 }
 
