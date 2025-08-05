@@ -36,6 +36,24 @@ The web client should be available at http://localhost:3000 and the MCP server s
 
 Detailed usage instructions can be found in the respective `README.md` files within the `apps` directory.
 
+<h2>AI Tool Integration</h2>
+
+You can add the Supercontext MCP server to any AI tool that supports MCP. For example, in Cursor, Roo Code, or other compatible tools, you would add the following configuration to your settings:
+
+```json
+{
+  "mcpServers": {
+    "supercontext": {
+      "type": "streamable-http",
+      "url": "<YOUR_SUPERCONTEXT_MCP_ENDPOINT>/mcp",
+      "headers": {
+        "x-api-key": "<YOUR_SUPERCONTEXT_API_KEY>"
+      }
+    }
+  }
+}
+```
+
 <h2>Contributing</h2>
 
 We welcome contributions from the community! If you'd like to contribute, please fork the repository and submit a pull request.
