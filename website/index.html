@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>supercontext - centralized memory store for ai teams</title>
+    <meta name="description" content="The open-source solution for sharing AI context across your development workflow">
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <section class="left-section">
+            <header>
+                <a href="/"
+                    style="display: flex; align-items: center; text-decoration: none; font-family: sans-serif; font-weight: bold; font-size: 24px; color: #fff;">
+                    <svg width="24" height="24" viewBox="0 0 42.396881 41.481857" fill="none" version="1.1"
+                        id="svg-logo" role="img" aria-label="Supercontext Logo" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="logoGradient">
+                                <stop style="stop-color:#0066ff;stop-opacity:1;" offset="0" />
+                                <stop style="stop-color:#00c7ff;stop-opacity:1;" offset="1" />
+                            </linearGradient>
+                            <linearGradient xlink:href="#logoGradient" id="linearGradient1595" x1="8.6881161"
+                                y1="30.979269" x2="51.084995" y2="30.979269" gradientUnits="userSpaceOnUse"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" />
+                        </defs>
+                        <g transform="translate(-8.688116,-10.23834)">
+                            <path
+                                d="m 21.837922,11.391251 12.07437,-1.152911 -0.178588,8.381357 q -0.03466,3.049909 -0.699616,6.990896 1.974864,-1.241032 2.593175,-1.687818 2.172085,-1.481434 3.320757,-2.145042 l 7.2425,-4.347464 4.894477,11.220525 -8.243251,2.559667 q -2.252035,0.658176 -6.770763,1.255819 3.294092,2.122748 5.288937,3.926411 l 6.284358,5.659325 -9.114765,8.348336 -4.762565,-7.023272 q -1.028736,-1.508162 -3.44333,-5.930598 -1.640401,5.252765 -2.238725,6.473144 l -3.378075,7.800572 -10.827066,-6.444206 5.516836,-6.786152 q 2.317337,-2.824728 4.600025,-4.870649 -2.534537,0.02044 -6.706795,-0.356678 L 8.6881165,32.699021 11.497196,20.74293 l 7.930083,2.732545 q 1.255274,0.434069 6.285698,2.834167 -1.485795,-4.511122 -1.977506,-6.735273 z"
+                                style="fill:url(#linearGradient1595);stroke-width:1.15527;stroke-linecap:round;stroke-linejoin:round" />
+                        </g>
+                    </svg>
+                    <span style="margin-left: 8px;">supercontext</span>
+                </a>
+            </header>
+
+            <div class="memory-feed">
+                <div class="memory-scroller">
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">claude</span></div>
+                        <div class="memory-content">updated the `User` model to eager-load the `profile` relation,
+                            improving
+                            performance</div>
+                        <div class="spaces"><span class="space-name">backend</span><span
+                                class="space-name">general</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">cursor</span></div>
+                        <div class="memory-content">refactored API routes to use kebab-case for consistency with our
+                            naming conventions</div>
+                        <div class="spaces"><span class="space-name">api</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">windsurf</span></div>
+                        <div class="memory-content">fixed a bug in the `calculateDiscount` function by adding a check
+                            for
+                            negative values</div>
+                        <div class="spaces"><span class="space-name">general</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">claude</span></div>
+                        <div class="memory-content">implemented soft deletes on the `products` table by adding a
+                            `deleted_at` timestamp</div>
+                        <div class="spaces"><span class="space-name">backend</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">cursor</span></div>
+                        <div class="memory-content">made the `processOrder` function idempotent to prevent duplicate
+                            orders on retry</div>
+                        <div class="spaces"><span class="space-name">backend</span><span class="space-name">api</span>
+                        </div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">windsurf</span></div>
+                        <div class="memory-content">added unit tests to the new module, bringing test coverage to 85%
+                        </div>
+                        <div class="spaces"><span class="space-name">general</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">claude</span></div>
+                        <div class="memory-content">implemented rate limiting on the `sendEmail` function to stay within
+                            the 100 emails/minute limit</div>
+                        <div class="spaces"><span class="space-name">api</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">cursor</span></div>
+                        <div class="memory-content">integrated the `feature-flags` service to control the rollout of the
+                            new checkout flow</div>
+                        <div class="spaces"><span class="space-name">frontend</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">windsurf</span></div>
+                        <div class="memory-content">added new translations for the UI to the `translations.json` file
+                        </div>
+                        <div class="spaces"><span class="space-name">frontend</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">claude</span></div>
+                        <div class="memory-content">upgraded the `Chart.js` library to the latest version to fix a
+                            rendering bug</div>
+                        <div class="spaces"><span class="space-name">frontend</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">claude</span></div>
+                        <div class="memory-content">updated the `User` model to eager-load the `profile` relation,
+                            improving
+                            performance</div>
+                        <div class="spaces"><span class="space-name">backend</span><span
+                                class="space-name">general</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">cursor</span></div>
+                        <div class="memory-content">refactored API routes to use kebab-case for consistency with our
+                            naming conventions</div>
+                        <div class="spaces"><span class="space-name">api</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">windsurf</span></div>
+                        <div class="memory-content">fixed a bug in the `calculateDiscount` function by adding a check
+                            for
+                            negative values</div>
+                        <div class="spaces"><span class="space-name">general</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">claude</span></div>
+                        <div class="memory-content">implemented soft deletes on the `products` table by adding a
+                            `deleted_at` timestamp</div>
+                        <div class="spaces"><span class="space-name">backend</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">cursor</span></div>
+                        <div class="memory-content">made the `processOrder` function idempotent to prevent duplicate
+                            orders on retry</div>
+                        <div class="spaces"><span class="space-name">backend</span><span class="space-name">api</span>
+                        </div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">windsurf</span></div>
+                        <div class="memory-content">added unit tests to the new module, bringing test coverage to 85%
+                        </div>
+                        <div class="spaces"><span class="space-name">general</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">claude</span></div>
+                        <div class="memory-content">implemented rate limiting on the `sendEmail` function to stay within
+                            the 100 emails/minute limit</div>
+                        <div class="spaces"><span class="space-name">api</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">cursor</span></div>
+                        <div class="memory-content">integrated the `feature-flags` service to control the rollout of the
+                            new checkout flow</div>
+                        <div class="spaces"><span class="space-name">frontend</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">windsurf</span></div>
+                        <div class="memory-content">added new translations for the UI to the `translations.json` file
+                        </div>
+                        <div class.spaces"><span class="space-name">frontend</span></div>
+                    </div>
+                    <div class="memory-item">
+                        <div class="memory-header"><span class="agent-name">claude</span></div>
+                        <div class="memory-content">upgraded the `Chart.js` library to the latest version to fix a
+                            rendering bug</div>
+                        <div class="spaces"><span class="space-name">frontend</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fig">
+                <svg width="18rem" height="18rem" viewBox="0 0 48 48" fill="none" xml:space="preserve"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="m21.838 11.391 12.074-1.153-.178 8.382q-.035 3.05-.7 6.99 1.975-1.24 2.593-1.687 2.172-1.482 3.321-2.145l7.243-4.348 4.894 11.22-8.243 2.56q-2.252.659-6.771 1.256 3.294 2.123 5.289 3.927l6.284 5.659L38.53 50.4l-4.763-7.023q-1.029-1.508-3.443-5.93-1.64 5.252-2.24 6.473l-3.377 7.8-10.827-6.444 5.517-6.786q2.317-2.825 4.6-4.87-2.535.02-6.707-.357l-8.602-.564 2.81-11.956 7.93 2.732q1.255.435 6.285 2.835-1.486-4.511-1.978-6.736z"
+                        style="fill:none;stroke:#505050;stroke-width:1.15527;stroke-linecap:round;stroke-linejoin:round"
+                        aria-label="*" transform="translate(-5.75 -6.75)" />
+                </svg>
+            </div>
+        </section>
+        <section class="right-section">
+            <div class="hero-content">
+                <h1 class="hero-title">Centralized Memory for AI Teams</h1>
+                <p class="hero-subtitle">The open-source solution for sharing AI context across your development
+                    workflow</p>
+                <p class="hero-description">
+                    SuperContext eliminates context silos in AI-powered development. When your team uses Claude Code,
+                    Cursor, or Windsurf, everyone stays in sync with a centralized memory store that connects to your
+                    existing tools.
+                </p>
+
+                <div class="cta-container">
+                    <a href="https://github.com/superhq-ai/supercontext" class="cta-button cta-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+                        </svg>
+                        View on GitHub
+                    </a>
+                    <a href="#" class="cta-button cta-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 2v4" />
+                            <path d="M16 2v4" />
+                            <rect width="18" height="18" x="3" y="4" rx="2" />
+                            <path d="M3 10h18" />
+                        </svg>
+                        Schedule a Call
+                    </a>
+                </div>
+            </div>
+            <footer>
+                <p>&copy; 2025 supercontext. all rights reserved.</p>
+                <div class="social-links">
+                    <a href="#">x</a>
+                    <a href="#">peerlist</a>
+                    <a href="#">discord</a>
+                </div>
+            </footer>
+        </section>
+    </div>
+</body>
+
+</html>
