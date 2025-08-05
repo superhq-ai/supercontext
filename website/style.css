@@ -432,19 +432,19 @@ a.logo-link:hover #svg-logo {
 		position: absolute;
 		left: 50%;
 		transform: translateX(-50%);
-		animation: scrollDrop 1.8s infinite ease-in-out;
+		animation: scrollDrop 1.5s infinite ease-in-out;
 	}
 
 	@keyframes scrollDrop {
 		0% {
-			top: 8px;
+			top: 28px;
 			opacity: 1;
 		}
 		50% {
 			opacity: 0.6;
 		}
 		100% {
-			top: 32px;
+			top: 8px;
 			opacity: 0;
 		}
 	}
