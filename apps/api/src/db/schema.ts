@@ -283,6 +283,7 @@ export const invite = pgTable("invite", {
 	email: text("email").notNull(),
 	token: text("token").notNull().unique(),
 	status: inviteStatusEnum("status").default("pending").notNull(),
+	role: roleEnum("role").default("user").notNull(),
 	invitedBy: text("invited_by").references(() => user.id, {
 		onDelete: "set null",
 	}),

@@ -9,7 +9,15 @@ bun install
 To run:
 
 ```bash
-bun run index.ts
+bun dev
 ```
 
-This project was created using `bun init` in bun v1.2.17. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+### Create Admin User
+
+To create a new admin user, run the following command:
+
+```bash
+bun run admin:create <email>
+```
+
+If you don't provide an email, the script will prompt you to enter one. The script will output an invite URL that you can use to sign up.

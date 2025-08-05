@@ -129,6 +129,7 @@ export async function updateUserProfile({ id, role, active }: UpdateUserInput) {
 
 type CreateInviteInput = {
 	email: string;
+	role?: "user" | "admin";
 	invitedBy?: string;
 	expiresInDays?: number;
 };
@@ -137,6 +138,7 @@ export async function createInvite({
 	email,
 	invitedBy,
 	expiresInDays = 7,
+	role = "user",
 }: CreateInviteInput) {
 	const token = randomUUID();
 	const now = new Date();
@@ -161,6 +163,7 @@ export async function createInvite({
 			email,
 			token,
 			status: "pending",
+			role,
 			invitedBy,
 			createdAt: now,
 			expiresAt,
@@ -245,7 +248,7 @@ export async function acceptInvite({
 	const createdUser = await createUser({
 		email: inv.email,
 		name,
-		role: "user",
+		role: inv.role,
 		password,
 	});
 

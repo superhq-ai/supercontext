@@ -19,7 +19,6 @@ export const auth = betterAuth({
 			role: {
 				type: "string",
 				required: false,
-				enum: schema.roleEnum.enumValues,
 				defaultValue: "user",
 				input: false,
 			},
@@ -91,14 +90,26 @@ export const auth = betterAuth({
 		after: createAuthMiddleware(async (ctx) => {
 			if (ctx.path === "/sign-up/email" && ctx.context.newSession) {
 				const { inviteId } = ctx.body || {};
+				const user = ctx.context.newSession.user;
 				if (inviteId) {
-					await db
-						.update(schema.invite)
-						.set({
-							status: "used",
-							usedAt: new Date(),
-						})
+					const [invite] = await db
+						.select()
+						.from(schema.invite)
 						.where(eq(schema.invite.id, inviteId));
+
+					if (invite && user) {
+						await db
+							.update(schema.user)
+							.set({ role: invite.role })
+							.where(eq(schema.user.id, user.id));
+						await db
+							.update(schema.invite)
+							.set({
+								status: "used",
+								usedAt: new Date(),
+							})
+							.where(eq(schema.invite.id, inviteId));
+					}
 				}
 			}
 		}),
