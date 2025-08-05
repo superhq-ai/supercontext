@@ -12,6 +12,10 @@
 
 SuperContext eliminates context silos in AI-powered development. When your team uses Claude Code, Cursor, or Windsurf, everyone stays in sync with a centralized memory store that connects to your existing tools. It's the open-source solution for sharing AI context across your development workflow.
 
+<p align="center">
+  <img src="assets/preview.png" alt="Supercontext Screenshot">
+</p>
+
 <h2>Features</h2>
 
 - **Scalable Context Management:** Efficiently manage and store large volumes of contextual data.
