@@ -454,12 +454,13 @@ a.logo-link:hover #svg-logo {
 	}
 
 	.clipped-text {
+		--font-size: min(8rem, 15vw);
 		display: block;
 		position: absolute;
-		bottom: -1rem;
+		bottom: calc(var(--font-size) / 4 * -1);
 		left: 50%;
 		transform: translateX(-50%);
-		font-size: 5rem;
+		font-size: var(--font-size);
 		font-weight: bold;
 		color: hsl(var(--muted-foreground) / 0.15);
 		pointer-events: none;
