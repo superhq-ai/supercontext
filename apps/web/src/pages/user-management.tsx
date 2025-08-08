@@ -23,6 +23,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/auth-context";
 import { useUserManagementStore } from "@/stores/user-management-store";
 import type { User } from "@/types";
@@ -210,161 +211,194 @@ export function UserManagementPage() {
 						</CardContent>
 					</Card>
 				) : (
-					<>
-						<Card className="mb-8">
-							<CardHeader>
-								<CardTitle>Invited Users</CardTitle>
-							</CardHeader>
-							<CardContent>
-								{pendingInvites.length === 0 ? (
-									<p className="text-muted-foreground">No pending invites.</p>
-								) : (
-									<table className="min-w-full">
-										<thead>
-											<tr className="border-b">
-												<th className="text-left p-4">Email</th>
-												<th className="text-left p-4">Expires At</th>
-												<th className="text-left p-4">Actions</th>
-											</tr>
-										</thead>
-										<tbody>
-											{pendingInvites.map((invite) => (
-												<tr key={invite.id} className="border-b">
-													<td className="p-4">{invite.email}</td>
-													<td className="p-4">
-														{new Date(invite.expiresAt).toLocaleDateString()}
-													</td>
-													<td className="p-4">
-														<Button
-															size="sm"
-															variant="outline"
-															onClick={() => {
-																navigator.clipboard.writeText(
-																	`${window.location.origin}/invite/${invite.token}`,
-																);
-																toast.success(
-																	"Invite link copied to clipboard",
-																);
-															}}
-														>
-															Copy Link
-														</Button>
-													</td>
-												</tr>
-											))}
-										</tbody>
-									</table>
+					<Tabs defaultValue="users" className="space-y-6">
+						<TabsList className="w-fit">
+							<TabsTrigger value="users">Users</TabsTrigger>
+							<TabsTrigger value="invites">
+								Pending Invites
+								{pendingInvites.length > 0 && (
+									<Badge variant="secondary" className="ml-2">
+										{pendingInvites.length}
+									</Badge>
 								)}
-								{invitesPagination.total > 0 && (
-									<Pagination
-										currentPage={
-											Math.floor(
-												invitesPagination.offset / invitesPagination.limit,
-											) + 1
-										}
-										totalPages={Math.ceil(
-											invitesPagination.total / invitesPagination.limit,
-										)}
-										onPageChange={handleInvitePageChange}
-										pagination={invitesPagination}
-									/>
-								)}
-							</CardContent>
-						</Card>
-						<Card>
-							<CardHeader>
-								<CardTitle>Users</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<div className="overflow-x-auto">
-									<table className="min-w-full">
-										<thead>
-											<tr className="border-b">
-												<th className="text-left p-4">Name</th>
-												<th className="text-left p-4">Email</th>
-												<th className="text-left p-4">Role</th>
-												<th className="text-left p-4">Status</th>
-												<th className="text-left p-4">Created</th>
-												<th className="text-left p-4">Actions</th>
-											</tr>
-										</thead>
-										<tbody>
-											{isLoading ? (
-												<tr>
-													<td colSpan={6} className="text-center p-4">
-														Loading users...
-													</td>
+							</TabsTrigger>
+						</TabsList>
+
+						<TabsContent value="users" className="space-y-4">
+							<Card>
+								<CardHeader>
+									<CardTitle>Active Users</CardTitle>
+								</CardHeader>
+								<CardContent>
+									<div className="overflow-x-auto">
+										<table className="min-w-full">
+											<thead>
+												<tr className="border-b">
+													<th className="text-left p-4">Name</th>
+													<th className="text-left p-4">Email</th>
+													<th className="text-left p-4">Role</th>
+													<th className="text-left p-4">Status</th>
+													<th className="text-left p-4">Created</th>
+													<th className="text-left p-4">Actions</th>
 												</tr>
-											) : users.length === 0 ? (
-												<tr>
-													<td colSpan={6} className="text-center p-4">
-														No users found.
-													</td>
-												</tr>
-											) : (
-												users.map((u) => (
-													<tr key={u.id} className="border-b">
-														<td className="p-4">{u.name}</td>
-														<td className="p-4">{u.email}</td>
-														<td className="p-4">
-															<Select
-																value={u.role}
-																onValueChange={(role: "user" | "admin") =>
-																	handleRoleChange(u.id, role)
-																}
-															>
-																<SelectTrigger className="w-[100px]">
-																	<SelectValue placeholder="Select role" />
-																</SelectTrigger>
-																<SelectContent>
-																	<SelectItem value="user">User</SelectItem>
-																	<SelectItem value="admin">Admin</SelectItem>
-																</SelectContent>
-															</Select>
-														</td>
-														<td className="p-4">
-															<Badge
-																variant={u.active ? "outline" : "destructive"}
-															>
-																{u.active ? "Active" : "Deactivated"}
-															</Badge>
-														</td>
-														<td className="p-4">
-															{new Date(u.createdAt).toLocaleDateString()}
-														</td>
-														<td className="p-4 space-x-2">
-															<Button
-																size="sm"
-																variant="ghost"
-																onClick={handleToggleActive(u.id)}
-															>
-																{u.active ? "Deactivate" : "Activate"}
-															</Button>
-															<Button
-																variant="outline"
-																size="sm"
-																onClick={() => handleUpdate(u)}
-															>
-																Save
-															</Button>
+											</thead>
+											<tbody>
+												{isLoading ? (
+													<tr>
+														<td colSpan={6} className="text-center p-4">
+															Loading users...
 														</td>
 													</tr>
-												))
+												) : users.length === 0 ? (
+													<tr>
+														<td colSpan={6} className="text-center p-4">
+															No users found.
+														</td>
+													</tr>
+												) : (
+													users.map((u) => (
+														<tr key={u.id} className="border-b">
+															<td className="p-4">{u.name}</td>
+															<td className="p-4">{u.email}</td>
+															<td className="p-4">
+																<Select
+																	value={u.role}
+																	onValueChange={(role: "user" | "admin") =>
+																		handleRoleChange(u.id, role)
+																	}
+																>
+																	<SelectTrigger className="w-[100px]">
+																		<SelectValue placeholder="Select role" />
+																	</SelectTrigger>
+																	<SelectContent>
+																		<SelectItem value="user">User</SelectItem>
+																		<SelectItem value="admin">Admin</SelectItem>
+																	</SelectContent>
+																</Select>
+															</td>
+															<td className="p-4">
+																<Badge
+																	variant={u.active ? "outline" : "destructive"}
+																>
+																	{u.active ? "Active" : "Deactivated"}
+																</Badge>
+															</td>
+															<td className="p-4">
+																{new Date(u.createdAt).toLocaleDateString()}
+															</td>
+															<td className="p-4 space-x-2">
+																<Button
+																	size="sm"
+																	variant="ghost"
+																	onClick={handleToggleActive(u.id)}
+																>
+																	{u.active ? "Deactivate" : "Activate"}
+																</Button>
+																<Button
+																	variant="outline"
+																	size="sm"
+																	onClick={() => handleUpdate(u)}
+																>
+																	Save
+																</Button>
+															</td>
+														</tr>
+													))
+												)}
+											</tbody>
+										</table>
+									</div>
+									<Pagination
+										currentPage={
+											Math.floor(pagination.offset / pagination.limit) + 1
+										}
+										totalPages={Math.ceil(pagination.total / pagination.limit)}
+										onPageChange={handlePageChange}
+										pagination={pagination}
+									/>
+								</CardContent>
+							</Card>
+						</TabsContent>
+
+						<TabsContent value="invites" className="space-y-4">
+							<Card>
+								<CardHeader>
+									<CardTitle>Pending Invitations</CardTitle>
+								</CardHeader>
+								<CardContent>
+									{pendingInvites.length === 0 ? (
+										<div className="text-center py-8">
+											<p className="text-muted-foreground">No pending invites.</p>
+										</div>
+									) : (
+										<>
+											<div className="overflow-x-auto">
+												<table className="min-w-full">
+													<thead>
+														<tr className="border-b">
+															<th className="text-left p-4">Email</th>
+															<th className="text-left p-4">Invited By</th>
+															<th className="text-left p-4">Created</th>
+															<th className="text-left p-4">Expires At</th>
+															<th className="text-left p-4">Actions</th>
+														</tr>
+													</thead>
+													<tbody>
+														{pendingInvites.map((invite) => (
+															<tr key={invite.id} className="border-b">
+																<td className="p-4 font-medium">{invite.email}</td>
+																<td className="p-4 text-muted-foreground">{invite.invitedBy}</td>
+																<td className="p-4 text-muted-foreground">
+																	{new Date(invite.createdAt).toLocaleDateString()}
+																</td>
+																<td className="p-4">
+																	<Badge 
+																		variant={new Date(invite.expiresAt) > new Date() ? "outline" : "destructive"}
+																	>
+																		{new Date(invite.expiresAt).toLocaleDateString()}
+																	</Badge>
+																</td>
+																<td className="p-4">
+																	<Button
+																		size="sm"
+																		variant="outline"
+																		onClick={() => {
+																			navigator.clipboard.writeText(
+																				`${window.location.origin}/invite/${invite.token}`,
+																			);
+																			toast.success(
+																				"Invite link copied to clipboard",
+																			);
+																		}}
+																	>
+																		Copy Link
+																	</Button>
+																</td>
+															</tr>
+														))}
+													</tbody>
+												</table>
+											</div>
+											{invitesPagination.total > 0 && (
+												<Pagination
+													currentPage={
+														Math.floor(
+															invitesPagination.offset / invitesPagination.limit,
+														) + 1
+													}
+													totalPages={Math.ceil(
+														invitesPagination.total / invitesPagination.limit,
+													)}
+													onPageChange={handleInvitePageChange}
+													pagination={invitesPagination}
+												/>
 											)}
-										</tbody>
-									</table>
-								</div>
-								<Pagination
-									currentPage={
-										Math.floor(pagination.offset / pagination.limit) + 1
-									}
-									totalPages={Math.ceil(pagination.total / pagination.limit)}
-									onPageChange={handlePageChange}
-									pagination={pagination}
-								/>
-							</CardContent>
-						</Card>
-					</>
+										</>
+									)}
+								</CardContent>
+							</Card>
+						</TabsContent>
+					</Tabs>
 				)}
 			</div>
 		</MainLayout>
