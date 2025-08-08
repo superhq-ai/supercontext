@@ -2,6 +2,7 @@ import { Filter, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
 import { MainLayout } from "@/components/layouts/main-layout";
+import { CreateMemoryModal } from "@/components/modals/create-memory-modal";
 import { Pagination } from "@/components/shared/pagination";
 import { SpaceSelector } from "@/components/shared/space-selector";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { DEFAULT_SORT_ORDER } from "@/constants";
 import { useMemoriesStore } from "@/stores/memories-store";
 
@@ -58,6 +58,7 @@ export function MemoriesPage() {
 		[],
 	);
 	const [isInSearchMode, setIsInSearchMode] = useState(false);
+	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
 	useEffect(() => {
 		fetchSpaces();
@@ -146,6 +147,12 @@ export function MemoriesPage() {
 		fetchData({ spaceIds: [], sortOrder });
 	};
 
+	const handleResetForm = () => {
+		setNewMemorySpaceIds([]);
+		setNewMemoryContent("");
+		setCreationStatus(null);
+	};
+
 	const totalPages = Math.ceil(pagination.total / pagination.limit);
 	const currentPage = Math.floor(pagination.offset / pagination.limit) + 1;
 
@@ -162,81 +169,22 @@ export function MemoriesPage() {
 							View, search, and manage your memories.
 						</p>
 					</div>
-					<Dialog
-						onOpenChange={(open) => {
-							if (!open) {
-								setNewMemorySpaceIds([]);
-								setCreationStatus(null);
-							}
-						}}
-					>
-						<DialogTrigger asChild>
-							<Button>Add Memory</Button>
-						</DialogTrigger>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>Create New Memory</DialogTitle>
-								<DialogDescription>
-									Add a new memory to your space.
-								</DialogDescription>
-							</DialogHeader>
-							<div className="space-y-4">
-								<div>
-									<label
-										htmlFor="newMemorySpaceIds"
-										className="text-sm font-medium text-muted-foreground"
-									>
-										Spaces
-									</label>
-									<SpaceSelector
-										options={spaces.map((s) => ({
-											value: s.id,
-											label: s.name,
-										}))}
-										selected={newMemorySpaceIds}
-										onChange={setNewMemorySpaceIds}
-										className="mt-1"
-										mode="multiple"
-									/>
-								</div>
-								<div>
-									<label
-										htmlFor="newMemoryContent"
-										className="text-sm font-medium text-muted-foreground"
-									>
-										Memory Content
-									</label>
-									<Textarea
-										id="newMemoryContent"
-										placeholder="Enter your memory content..."
-										value={newMemoryContent}
-										onChange={(e) => setNewMemoryContent(e.target.value)}
-										className="mt-1"
-										rows={3}
-									/>
-								</div>
-								<div className="flex items-center gap-4">
-									<Button
-										onClick={createMemory}
-										disabled={isCreating || !newMemoryContent.trim()}
-									>
-										{isCreating ? "Creating..." : "Create Memory"}
-									</Button>
-									{creationStatus && (
-										<p
-											className={`text-sm ${
-												creationStatus.type === "error"
-													? "text-red-500"
-													: "text-foreground"
-											}`}
-										>
-											{creationStatus.message}
-										</p>
-									)}
-								</div>
-							</div>
-						</DialogContent>
-					</Dialog>
+					<Button onClick={() => setIsCreateModalOpen(true)}>
+						Add Memory
+					</Button>
+					<CreateMemoryModal
+						isOpen={isCreateModalOpen}
+						onOpenChange={setIsCreateModalOpen}
+						spaces={spaces}
+						isCreating={isCreating}
+						creationStatus={creationStatus}
+						newMemoryContent={newMemoryContent}
+						newMemorySpaceIds={newMemorySpaceIds}
+						onContentChange={setNewMemoryContent}
+						onSpaceIdsChange={setNewMemorySpaceIds}
+						onCreateMemory={createMemory}
+						onResetForm={handleResetForm}
+					/>
 				</div>
 
 				{/* Search and Controls Section */}

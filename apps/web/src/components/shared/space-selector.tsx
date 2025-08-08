@@ -82,38 +82,69 @@ export function SpaceSelector({
 					className={cn("w-full justify-between", className)}
 					ref={triggerRef} // Attach ref to the trigger
 				>
-					<div className="flex gap-1 flex-wrap">
+					<div className="flex gap-1 flex-wrap overflow-hidden">
 						{mode === "multiple" ? (
 							selected.length > 0 ? (
-								selected
-									.map((value) =>
-										options.find((option) => option.value === value),
-									)
-									.filter(Boolean)
-									.map(
-										(option) =>
-											option && (
-												<Badge
-													variant="secondary"
-													key={option.value}
-													className="mr-1"
-													onClick={(e) => {
-														e.stopPropagation();
-														handleRemove(option.value);
-													}}
-												>
-													{option.label}
-													<X className="ml-1 h-4 w-4" />
-												</Badge>
-											),
-									)
+								selected.length <= 2 ? (
+									// Show individual badges for 2 or fewer selections
+									selected
+										.map((value) =>
+											options.find((option) => option.value === value),
+										)
+										.filter(Boolean)
+										.map(
+											(option) =>
+												option && (
+													<Badge
+														variant="secondary"
+														key={option.value}
+														className="mr-1 shrink-0"
+														onClick={(e) => {
+															e.stopPropagation();
+															handleRemove(option.value);
+														}}
+													>
+														{option.label}
+														<X className="ml-1 h-4 w-4" />
+													</Badge>
+												),
+										)
+								) : (
+									// Show first badge + count for 3 or more selections
+									<>
+										{(() => {
+											const firstOption = options.find(
+												(option) => option.value === selected[0],
+											);
+											return (
+												firstOption && (
+													<Badge
+														variant="secondary"
+														key={firstOption.value}
+														className="mr-1 shrink-0"
+														onClick={(e) => {
+															e.stopPropagation();
+															handleRemove(firstOption.value);
+														}}
+													>
+														{firstOption.label}
+														<X className="ml-1 h-4 w-4" />
+													</Badge>
+												)
+											);
+										})()}
+										<Badge variant="outline" className="shrink-0">
+											+{selected.length - 1} more
+										</Badge>
+									</>
+								)
 							) : (
-								<span>Select spaces...</span>
+								<span className="text-muted-foreground">Select spaces...</span>
 							)
 						) : selectedLabel ? (
 							<span>{selectedLabel}</span>
 						) : (
-							<span>Select a space...</span>
+							<span className="text-muted-foreground">Select a space...</span>
 						)}
 					</div>
 					<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -130,7 +161,8 @@ export function SpaceSelector({
 						{options.map((option) => (
 							<CommandItem
 								key={option.value}
-								onSelect={() => handleSelect(option.value)}
+								value={option.value}
+								onSelect={(currentValue) => handleSelect(currentValue)}
 							>
 								<Check
 									className={cn(

@@ -291,6 +291,7 @@ export const useMemoriesStore = create<MemoriesStore>((set) => ({
 					state.memories = [newMemory, ...memories];
 					state.pagination.total += 1;
 					state.newMemoryContent = "";
+					state.newMemorySpaceIds = [];
 					state.creationStatus = {
 						message: "Memory created successfully",
 						type: "success",
