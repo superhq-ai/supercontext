@@ -335,7 +335,9 @@ export function UserManagementPage() {
 								<CardContent>
 									{pendingInvites.length === 0 ? (
 										<div className="text-center py-8">
-											<p className="text-muted-foreground">No pending invites.</p>
+											<p className="text-muted-foreground">
+												No pending invites.
+											</p>
 										</div>
 									) : (
 										<>
@@ -353,16 +355,28 @@ export function UserManagementPage() {
 													<tbody>
 														{pendingInvites.map((invite) => (
 															<tr key={invite.id} className="border-b">
-																<td className="p-4 font-medium">{invite.email}</td>
-																<td className="p-4 text-muted-foreground">{invite.invitedBy}</td>
+																<td className="p-4 font-medium">
+																	{invite.email}
+																</td>
 																<td className="p-4 text-muted-foreground">
-																	{new Date(invite.createdAt).toLocaleDateString()}
+																	{invite.invitedBy}
+																</td>
+																<td className="p-4 text-muted-foreground">
+																	{new Date(
+																		invite.createdAt,
+																	).toLocaleDateString()}
 																</td>
 																<td className="p-4">
-																	<Badge 
-																		variant={new Date(invite.expiresAt) > new Date() ? "outline" : "destructive"}
+																	<Badge
+																		variant={
+																			new Date(invite.expiresAt) > new Date()
+																				? "outline"
+																				: "destructive"
+																		}
 																	>
-																		{new Date(invite.expiresAt).toLocaleDateString()}
+																		{new Date(
+																			invite.expiresAt,
+																		).toLocaleDateString()}
 																	</Badge>
 																</td>
 																<td className="p-4 space-x-2">
@@ -383,7 +397,9 @@ export function UserManagementPage() {
 																	<Button
 																		size="sm"
 																		variant="destructive"
-																		onClick={() => handleRevokeInvite(invite.id)}
+																		onClick={() =>
+																			handleRevokeInvite(invite.id)
+																		}
 																		disabled={isLoading}
 																	>
 																		Revoke
@@ -398,7 +414,8 @@ export function UserManagementPage() {
 												<Pagination
 													currentPage={
 														Math.floor(
-															invitesPagination.offset / invitesPagination.limit,
+															invitesPagination.offset /
+																invitesPagination.limit,
 														) + 1
 													}
 													totalPages={Math.ceil(
