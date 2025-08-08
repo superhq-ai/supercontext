@@ -40,8 +40,10 @@ export function UserManagementPage() {
 		isLoading,
 		isCreating,
 		newEmail,
+		newRole,
 		latestInvite,
 		setNewEmail,
+		setNewRole,
 		clearLatestInvite,
 		fetchUsers,
 		fetchPendingInvites,
@@ -61,6 +63,7 @@ export function UserManagementPage() {
 
 	const resetInviteForm = () => {
 		setNewEmail("");
+		setNewRole("user");
 	};
 
 	const handleInvite = async () => {
@@ -146,6 +149,20 @@ export function UserManagementPage() {
 											onChange={(e) => setNewEmail(e.target.value)}
 											className="col-span-3"
 										/>
+									</div>
+									<div className="grid grid-cols-4 items-center gap-4">
+										<Label htmlFor="role" className="text-right">
+											Role
+										</Label>
+										<Select value={newRole} onValueChange={setNewRole}>
+											<SelectTrigger className="col-span-3">
+												<SelectValue placeholder="Select role" />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="user">User</SelectItem>
+												<SelectItem value="admin">Admin</SelectItem>
+											</SelectContent>
+										</Select>
 									</div>
 									<div className="grid grid-cols-4 items-center gap-4">
 										<Label className="text-right col-span-1">

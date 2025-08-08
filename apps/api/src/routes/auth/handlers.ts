@@ -41,5 +41,6 @@ export async function handleCheckInviteToken(c: Context) {
 		status: "success",
 		message: "Invite token is valid.",
 		email: invite[0]?.email,
+		role: invite[0]?.role,
 	});
 }

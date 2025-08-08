@@ -12,6 +12,7 @@ export type PendingInvite = {
 	id: string;
 	email: string;
 	token: string;
+	role: "user" | "admin";
 	invitedBy: string;
 	createdAt: string;
 	expiresAt: string;

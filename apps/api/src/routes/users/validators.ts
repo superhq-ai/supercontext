@@ -9,6 +9,7 @@ export const createUserSchema = z.object({
 
 export const createInviteSchema = z.object({
 	email: z.string().email(),
+	role: z.enum(["user", "admin"]).default("user"),
 	expiresInDays: z.number().int().min(1).max(30).optional(),
 });
 

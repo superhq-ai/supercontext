@@ -14,8 +14,10 @@ export interface UserManagementStore {
 	isCreating: boolean;
 	error: string | null;
 	newEmail: string;
+	newRole: "user" | "admin";
 	latestInvite: { email: string; token: string } | null;
 	setNewEmail: (email: string) => void;
+	setNewRole: (role: "user" | "admin") => void;
 	clearLatestInvite: () => void;
 	fetchUsers: (page?: number) => Promise<void>;
 	fetchPendingInvites: (page?: number) => Promise<void>;
@@ -46,11 +48,18 @@ export const useUserManagementStore = create<UserManagementStore>(
 		isCreating: false,
 		error: null,
 		newEmail: "",
+		newRole: "user",
 		latestInvite: null,
 		setNewEmail: (email) =>
 			set(
 				produce((state) => {
 					state.newEmail = email;
+				}),
+			),
+		setNewRole: (role) =>
+			set(
+				produce((state) => {
+					state.newRole = role;
 				}),
 			),
 		clearLatestInvite: () =>
@@ -105,7 +114,7 @@ export const useUserManagementStore = create<UserManagementStore>(
 		},
 
 		inviteUser: async () => {
-			const { newEmail } = get();
+			const { newEmail, newRole } = get();
 			if (!newEmail) return;
 			set(
 				produce((state) => {
@@ -118,6 +127,7 @@ export const useUserManagementStore = create<UserManagementStore>(
 					method: "POST",
 					body: JSON.stringify({
 						email: newEmail,
+						role: newRole,
 					}),
 				});
 				const data = await resp.json();
@@ -128,6 +138,7 @@ export const useUserManagementStore = create<UserManagementStore>(
 					produce((state) => {
 						state.latestInvite = { email: data.email, token: data.token };
 						state.newEmail = "";
+						state.newRole = "user";
 						state.pendingInvites.unshift(data);
 						state.invitesPagination.total += 1;
 					}),
@@ -253,7 +264,7 @@ export const useUserManagementStore = create<UserManagementStore>(
 				set(
 					produce((state) => {
 						state.pendingInvites = state.pendingInvites.filter(
-							(invite) => invite.id !== inviteId,
+							(invite: any) => invite.id !== inviteId,
 						);
 						state.invitesPagination.total -= 1;
 					}),

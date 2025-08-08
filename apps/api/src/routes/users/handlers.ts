@@ -77,9 +77,10 @@ export async function handleCreateInvite(c: Context) {
 	if (!parse.success) {
 		return c.json({ error: "Invalid input", details: parse.error.errors }, 400);
 	}
-	const { email, expiresInDays } = parse.data;
+	const { email, role, expiresInDays } = parse.data;
 	const invite = await createInvite({
 		email,
+		role,
 		invitedBy: user.id,
 		expiresInDays,
 	});

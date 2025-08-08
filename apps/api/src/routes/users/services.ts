@@ -179,6 +179,7 @@ export async function createInvite({
 		email: newInvite.email,
 		token: newInvite.token,
 		status: newInvite.status,
+		role: newInvite.role,
 		invitedBy: newInvite.invitedBy,
 		createdAt: newInvite.createdAt,
 		expiresAt: newInvite.expiresAt,
@@ -209,6 +210,7 @@ export async function getPendingInvites({
 			id: inv.id.toString(),
 			email: inv.email,
 			token: inv.token,
+			role: inv.role,
 			invitedBy: inv.invitedBy,
 			createdAt: inv.createdAt,
 			expiresAt: inv.expiresAt,
@@ -293,7 +295,7 @@ export async function getUserById(userId: string) {
 
 export async function revokeInvite(inviteId: string) {
 	const inviteIdNum = parseInt(inviteId, 10);
-	if (isNaN(inviteIdNum)) {
+	if (Number.isNaN(inviteIdNum)) {
 		throw new Error("Invalid invite ID");
 	}
 
