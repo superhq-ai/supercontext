@@ -34,8 +34,13 @@ export async function handleCreateSpace(c: Context) {
 
 export async function handleGetSpace(c: Context) {
 	const userId = getUserId(c);
+	const user = c.get("user");
 	const spaceId = c.req.param("spaceId");
-	const space = await getSpaceWithAccess({ spaceId, userId });
+	const space = await getSpaceWithAccess({ 
+		spaceId, 
+		userId, 
+		isAdmin: user?.role === "admin" 
+	});
 	if (!space)
 		throw new HTTPException(404, {
 			message: "Space not found or access denied",
@@ -45,7 +50,8 @@ export async function handleGetSpace(c: Context) {
 
 export async function handleListSpaces(c: Context) {
 	const userId = getUserId(c);
-	const spaces = await listSpacesForUser(userId);
+	const user = c.get("user");
+	const spaces = await listSpacesForUser(userId, user?.role === "admin");
 	return c.json(spaces);
 }
 
@@ -54,7 +60,11 @@ export async function handleUpdateSpace(c: Context) {
 	if (!user) throw new HTTPException(401, { message: "Unauthorized" });
 
 	const spaceId = c.req.param("spaceId");
-	const existing = await getSpaceWithAccess({ spaceId, userId: user.id });
+	const existing = await getSpaceWithAccess({ 
+		spaceId, 
+		userId: user.id, 
+		isAdmin: user.role === "admin" 
+	});
 	if (!existing)
 		throw new HTTPException(404, {
 			message: "Space not found or access denied",
@@ -76,7 +86,11 @@ export async function handleDeleteSpace(c: Context) {
 	if (!user) throw new HTTPException(401, { message: "Unauthorized" });
 
 	const spaceId = c.req.param("spaceId");
-	const existing = await getSpaceWithAccess({ spaceId, userId: user.id });
+	const existing = await getSpaceWithAccess({ 
+		spaceId, 
+		userId: user.id, 
+		isAdmin: user.role === "admin" 
+	});
 	if (!existing)
 		throw new HTTPException(404, {
 			message: "Space not found or access denied",
@@ -94,7 +108,11 @@ export async function handleAddUserToSpace(c: Context) {
 	if (!user) throw new HTTPException(401, { message: "Unauthorized" });
 
 	const spaceId = c.req.param("spaceId");
-	const existing = await getSpaceWithAccess({ spaceId, userId: user.id });
+	const existing = await getSpaceWithAccess({ 
+		spaceId, 
+		userId: user.id, 
+		isAdmin: user.role === "admin" 
+	});
 	if (!existing)
 		throw new HTTPException(404, {
 			message: "Space not found or access denied",
@@ -119,7 +137,11 @@ export async function handleRemoveUserFromSpace(c: Context) {
 
 	const spaceId = c.req.param("spaceId");
 	const userId = c.req.param("userId");
-	const existing = await getSpaceWithAccess({ spaceId, userId: user.id });
+	const existing = await getSpaceWithAccess({ 
+		spaceId, 
+		userId: user.id, 
+		isAdmin: user.role === "admin" 
+	});
 	if (!existing)
 		throw new HTTPException(404, {
 			message: "Space not found or access denied",
@@ -134,8 +156,13 @@ export async function handleRemoveUserFromSpace(c: Context) {
 
 export async function handleListSpaceUsers(c: Context) {
 	const userId = getUserId(c);
+	const user = c.get("user");
 	const spaceId = c.req.param("spaceId");
-	const space = await getSpaceWithAccess({ spaceId, userId });
+	const space = await getSpaceWithAccess({ 
+		spaceId, 
+		userId, 
+		isAdmin: user?.role === "admin" 
+	});
 	if (!space)
 		throw new HTTPException(404, {
 			message: "Space not found or access denied",

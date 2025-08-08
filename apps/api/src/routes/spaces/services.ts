@@ -9,10 +9,8 @@ import {
 	normalizeCursorPaginationParams,
 } from "@/lib/cursor-pagination";
 
-// Infer types
 type Space = typeof space.$inferSelect;
 
-// Input types
 export type CreateSpaceInput = {
 	name: string;
 	description?: string;
@@ -22,6 +20,7 @@ export type CreateSpaceInput = {
 export type GetSpaceInput = {
 	spaceId: string;
 	userId: string;
+	isAdmin?: boolean;
 };
 
 export type UpdateSpaceInput = {
@@ -44,7 +43,6 @@ export type RemoveUserFromSpaceInput = {
 	userIdToRemove: string;
 };
 
-// Create a new space and assign creator
 export async function createSpace({
 	name,
 	description,
@@ -73,8 +71,27 @@ export async function createSpace({
 	};
 }
 
-// Get space if user is assigned
-export async function getSpaceWithAccess({ spaceId, userId }: GetSpaceInput) {
+export async function getSpaceWithAccess({
+	spaceId,
+	userId,
+	isAdmin = false,
+}: GetSpaceInput) {
+	if (isAdmin) {
+		const found = await db.query.space.findFirst({
+			where: (s, { eq }) => eq(s.id, spaceId),
+		});
+		if (!found) return null;
+
+		return {
+			id: found.id,
+			name: found.name,
+			description: found.description,
+			createdAt: found.createdAt,
+			updatedAt: found.updatedAt,
+			createdBy: found.createdBy,
+		};
+	}
+
 	const assigned = await db.query.userSpace.findFirst({
 		where: (us, { eq, and }) =>
 			and(eq(us.spaceId, spaceId), eq(us.userId, userId)),
@@ -96,8 +113,20 @@ export async function getSpaceWithAccess({ spaceId, userId }: GetSpaceInput) {
 	};
 }
 
-// List spaces for a user
-export async function listSpacesForUser(userId: string) {
+export async function listSpacesForUser(userId: string, isAdmin = false) {
+	if (isAdmin) {
+		const rows = await db.select().from(space).orderBy(space.createdAt);
+
+		return rows.map((s) => ({
+			id: s.id,
+			name: s.name,
+			description: s.description,
+			createdAt: s.createdAt,
+			updatedAt: s.updatedAt,
+			createdBy: s.createdBy,
+		}));
+	}
+
 	const rows = await db
 		.select({ sp: space })
 		.from(space)
@@ -118,7 +147,6 @@ export async function listSpacesForUser(userId: string) {
 	});
 }
 
-// Update space fields
 export async function updateSpace({
 	spaceId,
 	name,
@@ -146,7 +174,6 @@ export async function updateSpace({
 	return updated;
 }
 
-// Delete a space
 export async function deleteSpace({ spaceId }: DeleteSpaceInput) {
 	const result = await db.delete(space).where(eq(space.id, spaceId)).execute();
 	return !!result?.rowCount;
@@ -206,7 +233,6 @@ export async function listSpaceUsers(
 	return createCursorPaginatedResponse(users, limit);
 }
 
-// Add a user to a space
 export async function addUserToSpace({
 	spaceId,
 	userIdToAdd,
@@ -227,7 +253,6 @@ export async function addUserToSpace({
 	return true;
 }
 
-// Remove a user from a space
 export async function removeUserFromSpace({
 	spaceId,
 	userIdToRemove,

@@ -84,12 +84,14 @@ export async function getMemory(memoryId: string) {
 export async function listMemories({
 	spaceIds,
 	userId,
+	isAdmin = false,
 	limit = 50,
 	offset = 0,
 	sortOrder = "desc",
 }: {
 	spaceIds: string[];
 	userId?: string;
+	isAdmin?: boolean;
 	limit?: number;
 	offset?: number;
 	sortOrder?: "asc" | "desc";
@@ -123,7 +125,7 @@ export async function listMemories({
 			.where(inArray(memoriesToSpaces.spaceId, spaceIds));
 		query.where(inArray(memory.id, subquery));
 		totalQuery.where(inArray(memory.id, subquery));
-	} else if (userId) {
+	} else if (userId && !isAdmin) {
 		const userSpaces = db
 			.select({ spaceId: userSpace.spaceId })
 			.from(userSpace)
@@ -168,6 +170,7 @@ export type SearchMemoriesInput = {
 	query: string;
 	spaceIds: string[];
 	userId?: string;
+	isAdmin?: boolean;
 	limit?: number;
 	offset?: number;
 };
@@ -176,6 +179,7 @@ export async function searchMemories({
 	query,
 	spaceIds,
 	userId,
+	isAdmin = false,
 	limit = 10,
 	offset = 0,
 }: SearchMemoriesInput) {
@@ -192,7 +196,7 @@ export async function searchMemories({
 			.from(memoriesToSpaces)
 			.where(inArray(memoriesToSpaces.spaceId, spaceIds));
 		conditions.push(inArray(memory.id, subquery));
-	} else if (userId) {
+	} else if (userId && !isAdmin) {
 		const userSpaces = db
 			.select({ spaceId: userSpace.spaceId })
 			.from(userSpace)
