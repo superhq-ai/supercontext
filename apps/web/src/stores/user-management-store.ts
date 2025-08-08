@@ -25,6 +25,7 @@ export interface UserManagementStore {
 		role: "user" | "admin",
 		active: boolean,
 	) => Promise<void>;
+	revokeInvite: (inviteId: string) => Promise<void>;
 }
 
 export const useUserManagementStore = create<UserManagementStore>(
@@ -223,6 +224,49 @@ export const useUserManagementStore = create<UserManagementStore>(
 					produce((state) => {
 						state.error = err instanceof Error ? err.message : "Unknown error";
 					}),
+				);
+			} finally {
+				set(
+					produce((state) => {
+						state.isLoading = false;
+					}),
+				);
+			}
+		},
+
+		revokeInvite: async (inviteId: string) => {
+			set(
+				produce((state) => {
+					state.isLoading = true;
+					state.error = null;
+				}),
+			);
+			try {
+				const resp = await fetchWithAuth(
+					`${API_ENDPOINTS.USERS}/invite/${inviteId}`,
+					{
+						method: "DELETE",
+					},
+				);
+				if (!resp.ok) throw new Error("Failed to revoke invite");
+				
+				set(
+					produce((state) => {
+						state.pendingInvites = state.pendingInvites.filter(
+							(invite) => invite.id !== inviteId,
+						);
+						state.invitesPagination.total -= 1;
+					}),
+				);
+				toast.success("Invite revoked successfully");
+			} catch (err: unknown) {
+				set(
+					produce((state) => {
+						state.error = err instanceof Error ? err.message : "Unknown error";
+					}),
+				);
+				toast.error(
+					err instanceof Error ? err.message : "Failed to revoke invite",
 				);
 			} finally {
 				set(

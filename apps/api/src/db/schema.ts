@@ -276,6 +276,7 @@ export const inviteStatusEnum = pgEnum("invite_status", [
 	"pending",
 	"used",
 	"expired",
+	"revoked",
 ]);
 
 export const invite = pgTable("invite", {

@@ -206,7 +206,7 @@ export async function getPendingInvites({
 
 	return {
 		invites: invites.map((inv) => ({
-			id: inv.id,
+			id: inv.id.toString(),
 			email: inv.email,
 			token: inv.token,
 			invitedBy: inv.invitedBy,
@@ -288,5 +288,42 @@ export async function getUserById(userId: string) {
 		createdAt: u.createdAt,
 		updatedAt: u.updatedAt,
 		active: u.active,
+	};
+}
+
+export async function revokeInvite(inviteId: string) {
+	const inviteIdNum = parseInt(inviteId, 10);
+	if (isNaN(inviteIdNum)) {
+		throw new Error("Invalid invite ID");
+	}
+
+	const [inv] = await db
+		.select()
+		.from(invite)
+		.where(eq(invite.id, inviteIdNum))
+		.limit(1);
+
+	if (!inv) {
+		throw new Error("Invite not found");
+	}
+
+	if (inv.status !== "pending") {
+		throw new Error("Only pending invites can be revoked");
+	}
+
+	const [revokedInvite] = await db
+		.update(invite)
+		.set({ status: "revoked" })
+		.where(eq(invite.id, inviteIdNum))
+		.returning();
+
+	if (!revokedInvite) {
+		throw new Error("Failed to revoke invite");
+	}
+
+	return {
+		id: revokedInvite.id.toString(),
+		email: revokedInvite.email,
+		status: revokedInvite.status,
 	};
 }

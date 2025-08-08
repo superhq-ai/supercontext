@@ -7,6 +7,7 @@ import {
 	handleGetAllUsers,
 	handleGetPendingInvites,
 	handleGetUser,
+	handleRevokeInvite,
 	handleSearchUsers,
 	handleUpdateUser,
 } from "./handlers";
@@ -25,5 +26,6 @@ router.get("/invites", handleGetPendingInvites);
 router.get("/:id", handleGetUser);
 router.patch("/:id", handleUpdateUser);
 router.post("/invite", handleCreateInvite);
+router.delete("/invite/:inviteId", handleRevokeInvite);
 
 export default router;

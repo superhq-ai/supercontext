@@ -7,6 +7,7 @@ import {
 	getAllUsers,
 	getPendingInvites,
 	getUserById,
+	revokeInvite,
 	searchUsers,
 	updateUserProfile,
 } from "./services";
@@ -127,4 +128,19 @@ export async function handleGetUser(c: Context) {
 		throw new HTTPException(404, { message: "User not found" });
 	}
 	return c.json(user);
+}
+
+export async function handleRevokeInvite(c: Context) {
+	const user = c.get("user");
+	if (!user || user.role !== "admin") {
+		throw new HTTPException(403, { message: "Forbidden" });
+	}
+	const inviteId = c.req.param("inviteId");
+	try {
+		const revokedInvite = await revokeInvite(inviteId);
+		return c.json(revokedInvite);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "Failed to revoke invite";
+		throw new HTTPException(400, { message });
+	}
 }

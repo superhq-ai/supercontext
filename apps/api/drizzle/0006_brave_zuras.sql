@@ -1,0 +1,1 @@
+ALTER TYPE "invite_status" ADD VALUE 'revoked';

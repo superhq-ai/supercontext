@@ -47,6 +47,7 @@ export function UserManagementPage() {
 		fetchPendingInvites,
 		inviteUser,
 		updateUser,
+		revokeInvite,
 	} = useUserManagementStore();
 
 	const [isInviteUserModalOpen, setInviteUserModalOpen] = useState(false);
@@ -94,6 +95,12 @@ export function UserManagementPage() {
 
 	const handleInvitePageChange = (newOffset: number) => {
 		fetchPendingInvites(Math.floor(newOffset / invitesPagination.limit) + 1);
+	};
+
+	const handleRevokeInvite = async (inviteId: string) => {
+		if (confirm("Are you sure you want to revoke this invite?")) {
+			await revokeInvite(inviteId);
+		}
 	};
 
 	return (
@@ -358,7 +365,7 @@ export function UserManagementPage() {
 																		{new Date(invite.expiresAt).toLocaleDateString()}
 																	</Badge>
 																</td>
-																<td className="p-4">
+																<td className="p-4 space-x-2">
 																	<Button
 																		size="sm"
 																		variant="outline"
@@ -372,6 +379,14 @@ export function UserManagementPage() {
 																		}}
 																	>
 																		Copy Link
+																	</Button>
+																	<Button
+																		size="sm"
+																		variant="destructive"
+																		onClick={() => handleRevokeInvite(invite.id)}
+																		disabled={isLoading}
+																	>
+																		Revoke
 																	</Button>
 																</td>
 															</tr>
