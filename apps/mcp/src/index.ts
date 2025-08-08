@@ -36,12 +36,22 @@ const server = new FastMCP({
 	name: "Supercontext MCP",
 	version: "0.0.1",
 	authenticate: async (request) => {
-		const apiKeyHeader = request.headers["x-api-key"];
-		const apiKey = Array.isArray(apiKeyHeader) ? apiKeyHeader[0] : apiKeyHeader;
+		const authHeader = request.headers.authorization;
+		const bearerToken = Array.isArray(authHeader) ? authHeader[0] : authHeader;
+		
+		if (bearerToken?.startsWith("Bearer ")) {
+			const apiKey = bearerToken.replace("Bearer ", "");
+			return { apiKey };
+		}
 
-		return {
-			apiKey,
-		};
+		const apiKeyHeader = request.headers["x-api-key"];
+		const headerApiKey = Array.isArray(apiKeyHeader) ? apiKeyHeader[0] : apiKeyHeader;
+		
+		if (headerApiKey) {
+			return { apiKey: headerApiKey };
+		}
+
+		throw new Error("Authentication required: provide either Bearer token or x-api-key header");
 	},
 });
 
