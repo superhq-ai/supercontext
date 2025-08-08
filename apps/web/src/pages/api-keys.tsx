@@ -2,16 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { MainLayout } from "@/components/layouts/main-layout";
 import { ApiKeyModal } from "@/components/modals/api-key-modal";
 import { CreateApiKeyModal } from "@/components/modals/create-api-key-modal";
+import { ApiKeyCard } from "@/components/shared/api-key-card";
 import type { Option } from "@/components/shared/space-selector";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { fetchWithAuth } from "@/lib/utils";
 
 interface ApiKey {
@@ -173,68 +167,12 @@ export function ApiKeysPage() {
 						</Card>
 					) : (
 						apiKeys.map((apiKey) => (
-							<Card key={apiKey.id}>
-								<CardHeader>
-									<div className="flex justify-between items-start">
-										<div>
-											<CardTitle className="text-lg">{apiKey.name}</CardTitle>
-											<CardDescription className="mt-1">
-												API Key: {apiKey.key.slice(0, 8)}...
-											</CardDescription>
-										</div>
-										<div className="flex gap-2">
-											<Badge
-												variant={
-													apiKey.status === "active" ? "default" : "secondary"
-												}
-											>
-												{apiKey.status === "active" ? "Active" : "Revoked"}
-											</Badge>
-											{apiKey.status === "active" ? (
-												<Button
-													variant="outline"
-													size="sm"
-													onClick={() => revokeApiKey(apiKey.id)}
-												>
-													Revoke
-												</Button>
-											) : (
-												<Button
-													variant="destructive"
-													size="sm"
-													onClick={() => deleteApiKey(apiKey.id)}
-												>
-													Delete
-												</Button>
-											)}
-										</div>
-									</div>
-								</CardHeader>
-								<CardContent>
-									<div className="space-y-2 text-sm text-muted-foreground">
-										<div>
-											<strong>Created:</strong>{" "}
-											{new Date(apiKey.createdAt).toLocaleDateString()}
-										</div>
-										{apiKey.lastUsedAt && (
-											<div>
-												<strong>Last Used:</strong>{" "}
-												{new Date(apiKey.lastUsedAt).toLocaleDateString()}
-											</div>
-										)}
-										{apiKey.spaces && apiKey.spaces.length > 0 && (
-											<div className="flex flex-wrap gap-2 mt-1">
-												<strong>Spaces:</strong>{" "}
-												{apiKey.spaces.map((space) => (
-													<Badge key={space.id} variant="secondary">
-														{space.name}
-													</Badge>
-												))}
-											</div>
-										)}
-									</div>
-								</CardContent>
-							</Card>
+							<ApiKeyCard
+								key={apiKey.id}
+								apiKey={apiKey}
+								onRevoke={revokeApiKey}
+								onDelete={deleteApiKey}
+							/>
 						))
 					)}
 				</div>

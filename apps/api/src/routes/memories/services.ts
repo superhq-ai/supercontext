@@ -94,8 +94,28 @@ export async function listMemories({
 	offset?: number;
 	sortOrder?: "asc" | "desc";
 }) {
-	const query = db.select().from(memory);
+	const query = db
+		.select({
+			id: memory.id,
+			content: memory.content,
+			metadata: memory.metadata,
+			createdAt: memory.createdAt,
+			userId: memory.userId,
+			spaces: sql<{ id: string; name: string }[]>`
+			COALESCE(
+				json_agg(
+					json_build_object('id', ${space.id}, 'name', ${space.name})
+				) FILTER (WHERE ${space.id} IS NOT NULL),
+				'[]'::json
+			)
+		`,
+		})
+		.from(memory)
+		.leftJoin(memoriesToSpaces, eq(memory.id, memoriesToSpaces.memoryId))
+		.leftJoin(space, eq(memoriesToSpaces.spaceId, space.id));
+
 	const totalQuery = db.select({ count: sql<number>`count(*)` }).from(memory);
+	
 	if (spaceIds.length > 0) {
 		const subquery = db
 			.select({ memoryId: memoriesToSpaces.memoryId })
@@ -122,6 +142,8 @@ export async function listMemories({
 		query.where(condition);
 		totalQuery.where(condition);
 	}
+
+	query.groupBy(memory.id);
 
 	if (sortOrder) {
 		query.orderBy(
@@ -198,9 +220,20 @@ export async function searchMemories({
 			metadata: memory.metadata,
 			createdAt: memory.createdAt,
 			similarity,
+			spaces: sql<{ id: string; name: string }[]>`
+			COALESCE(
+				json_agg(
+					json_build_object('id', ${space.id}, 'name', ${space.name})
+				) FILTER (WHERE ${space.id} IS NOT NULL),
+				'[]'::json
+			)
+		`,
 		})
 		.from(memory)
+		.leftJoin(memoriesToSpaces, eq(memory.id, memoriesToSpaces.memoryId))
+		.leftJoin(space, eq(memoriesToSpaces.spaceId, space.id))
 		.where(sql.join(conditions, sql.raw(" AND ")))
+		.groupBy(memory.id, similarity)
 		.orderBy((t) => desc(t.similarity))
 		.limit(limit)
 		.offset(offset);

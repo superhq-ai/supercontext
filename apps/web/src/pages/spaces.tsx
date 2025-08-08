@@ -2,16 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MainLayout } from "@/components/layouts/main-layout";
 import { CreateSpaceModal } from "@/components/modals/create-space-modal";
-import { SpaceUserManagementModal } from "@/components/modals/space-user-management-modal";
-import { Badge } from "@/components/ui/badge";
+import { SpaceCard } from "@/components/shared/space-card";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/auth-context";
 import { fetchWithAuth } from "@/lib/utils";
 
@@ -133,42 +126,12 @@ export function SpacesPage() {
 						</Card>
 					) : (
 						spaces.map((space) => (
-							<Card key={space.id}>
-								<CardHeader>
-									<div className="flex justify-between items-start">
-										<div>
-											<CardTitle className="text-lg">{space.name}</CardTitle>
-											{space.description && (
-												<CardDescription className="mt-1">
-													{space.description}
-												</CardDescription>
-											)}
-										</div>
-										<div className="flex gap-2">
-											<Badge variant="outline">
-												{new Date(space.createdAt).toLocaleDateString()}
-											</Badge>
-											{user?.role === "admin" && (
-												<>
-													<SpaceUserManagementModal spaceId={space.id} />
-													<Button
-														variant="destructive"
-														size="sm"
-														onClick={() => deleteSpace(space.id)}
-													>
-														Delete
-													</Button>
-												</>
-											)}
-										</div>
-									</div>
-								</CardHeader>
-								<CardContent>
-									<div className="text-sm text-muted-foreground">
-										<strong>Space ID:</strong> {space.id}
-									</div>
-								</CardContent>
-							</Card>
+							<SpaceCard
+								key={space.id}
+								space={space}
+								onDelete={deleteSpace}
+								showAdminActions={user?.role === "admin"}
+							/>
 						))
 					)}
 				</div>
