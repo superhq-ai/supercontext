@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
-
+import { hasApiKeyAccessToSpace } from "@/lib/api-key-space-access";
 import { getUserId } from "@/lib/get-user-id";
 import {
 	addUserToSpace,
@@ -35,11 +35,22 @@ export async function handleCreateSpace(c: Context) {
 export async function handleGetSpace(c: Context) {
 	const userId = getUserId(c);
 	const user = c.get("user");
+	const apiKey = c.get("apiKey");
 	const spaceId = c.req.param("spaceId");
-	const space = await getSpaceWithAccess({ 
-		spaceId, 
-		userId, 
-		isAdmin: user?.role === "admin" 
+	
+	if (apiKey) {
+		const hasAccess = await hasApiKeyAccessToSpace(apiKey.id, spaceId);
+		if (!hasAccess) {
+			throw new HTTPException(403, {
+				message: "API key does not have access to the requested space",
+			});
+		}
+	}
+	
+	const space = await getSpaceWithAccess({
+		spaceId,
+		userId,
+		isAdmin: user?.role === "admin",
 	});
 	if (!space)
 		throw new HTTPException(404, {
@@ -51,19 +62,36 @@ export async function handleGetSpace(c: Context) {
 export async function handleListSpaces(c: Context) {
 	const userId = getUserId(c);
 	const user = c.get("user");
-	const spaces = await listSpacesForUser(userId, user?.role === "admin");
+	const apiKey = c.get("apiKey");
+
+	const spaces = await listSpacesForUser(
+		userId,
+		user?.role === "admin",
+		apiKey?.id,
+	);
 	return c.json(spaces);
 }
 
 export async function handleUpdateSpace(c: Context) {
 	const user = c.get("user");
+	const apiKey = c.get("apiKey");
 	if (!user) throw new HTTPException(401, { message: "Unauthorized" });
 
 	const spaceId = c.req.param("spaceId");
-	const existing = await getSpaceWithAccess({ 
-		spaceId, 
-		userId: user.id, 
-		isAdmin: user.role === "admin" 
+	
+	if (apiKey) {
+		const hasAccess = await hasApiKeyAccessToSpace(apiKey.id, spaceId);
+		if (!hasAccess) {
+			throw new HTTPException(403, {
+				message: "API key does not have access to the requested space",
+			});
+		}
+	}
+	
+	const existing = await getSpaceWithAccess({
+		spaceId,
+		userId: user.id,
+		isAdmin: user.role === "admin",
 	});
 	if (!existing)
 		throw new HTTPException(404, {
@@ -83,13 +111,24 @@ export async function handleUpdateSpace(c: Context) {
 
 export async function handleDeleteSpace(c: Context) {
 	const user = c.get("user");
+	const apiKey = c.get("apiKey");
 	if (!user) throw new HTTPException(401, { message: "Unauthorized" });
 
 	const spaceId = c.req.param("spaceId");
-	const existing = await getSpaceWithAccess({ 
-		spaceId, 
-		userId: user.id, 
-		isAdmin: user.role === "admin" 
+	
+	if (apiKey) {
+		const hasAccess = await hasApiKeyAccessToSpace(apiKey.id, spaceId);
+		if (!hasAccess) {
+			throw new HTTPException(403, {
+				message: "API key does not have access to the requested space",
+			});
+		}
+	}
+	
+	const existing = await getSpaceWithAccess({
+		spaceId,
+		userId: user.id,
+		isAdmin: user.role === "admin",
 	});
 	if (!existing)
 		throw new HTTPException(404, {
@@ -105,13 +144,24 @@ export async function handleDeleteSpace(c: Context) {
 
 export async function handleAddUserToSpace(c: Context) {
 	const user = c.get("user");
+	const apiKey = c.get("apiKey");
 	if (!user) throw new HTTPException(401, { message: "Unauthorized" });
 
 	const spaceId = c.req.param("spaceId");
-	const existing = await getSpaceWithAccess({ 
-		spaceId, 
-		userId: user.id, 
-		isAdmin: user.role === "admin" 
+	
+	if (apiKey) {
+		const hasAccess = await hasApiKeyAccessToSpace(apiKey.id, spaceId);
+		if (!hasAccess) {
+			throw new HTTPException(403, {
+				message: "API key does not have access to the requested space",
+			});
+		}
+	}
+	
+	const existing = await getSpaceWithAccess({
+		spaceId,
+		userId: user.id,
+		isAdmin: user.role === "admin",
 	});
 	if (!existing)
 		throw new HTTPException(404, {
@@ -133,14 +183,25 @@ export async function handleAddUserToSpace(c: Context) {
 
 export async function handleRemoveUserFromSpace(c: Context) {
 	const user = c.get("user");
+	const apiKey = c.get("apiKey");
 	if (!user) throw new HTTPException(401, { message: "Unauthorized" });
 
 	const spaceId = c.req.param("spaceId");
 	const userId = c.req.param("userId");
-	const existing = await getSpaceWithAccess({ 
-		spaceId, 
-		userId: user.id, 
-		isAdmin: user.role === "admin" 
+	
+	if (apiKey) {
+		const hasAccess = await hasApiKeyAccessToSpace(apiKey.id, spaceId);
+		if (!hasAccess) {
+			throw new HTTPException(403, {
+				message: "API key does not have access to the requested space",
+			});
+		}
+	}
+	
+	const existing = await getSpaceWithAccess({
+		spaceId,
+		userId: user.id,
+		isAdmin: user.role === "admin",
 	});
 	if (!existing)
 		throw new HTTPException(404, {
@@ -157,11 +218,22 @@ export async function handleRemoveUserFromSpace(c: Context) {
 export async function handleListSpaceUsers(c: Context) {
 	const userId = getUserId(c);
 	const user = c.get("user");
+	const apiKey = c.get("apiKey");
 	const spaceId = c.req.param("spaceId");
-	const space = await getSpaceWithAccess({ 
-		spaceId, 
-		userId, 
-		isAdmin: user?.role === "admin" 
+	
+	if (apiKey) {
+		const hasAccess = await hasApiKeyAccessToSpace(apiKey.id, spaceId);
+		if (!hasAccess) {
+			throw new HTTPException(403, {
+				message: "API key does not have access to the requested space",
+			});
+		}
+	}
+	
+	const space = await getSpaceWithAccess({
+		spaceId,
+		userId,
+		isAdmin: user?.role === "admin",
 	});
 	if (!space)
 		throw new HTTPException(404, {

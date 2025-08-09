@@ -8,6 +8,7 @@ import {
 	space,
 	userSpace,
 } from "@/db/schema";
+import { getAllowedSpacesForApiKey } from "@/lib/api-key-space-access";
 import { generateEmbedding } from "@/lib/embedding";
 
 export type CreateMemoryInput = {
@@ -85,6 +86,7 @@ export async function listMemories({
 	spaceIds,
 	userId,
 	isAdmin = false,
+	apiKeyId,
 	limit = 50,
 	offset = 0,
 	sortOrder = "desc",
@@ -92,10 +94,33 @@ export async function listMemories({
 	spaceIds: string[];
 	userId?: string;
 	isAdmin?: boolean;
+	apiKeyId?: string;
 	limit?: number;
 	offset?: number;
 	sortOrder?: "asc" | "desc";
 }) {
+	let effectiveSpaceIds = spaceIds;
+	if (apiKeyId) {
+		const allowedSpaces = await getAllowedSpacesForApiKey(apiKeyId);
+		
+		if (spaceIds.length > 0) {
+			effectiveSpaceIds = spaceIds.filter(spaceId => allowedSpaces.includes(spaceId));
+		} else {
+			effectiveSpaceIds = allowedSpaces;
+		}
+		
+		if (effectiveSpaceIds.length === 0) {
+			return {
+				memories: [],
+				pagination: {
+					limit,
+					offset,
+					total: 0,
+				},
+			};
+		}
+	}
+
 	const query = db
 		.select({
 			id: memory.id,
@@ -117,15 +142,15 @@ export async function listMemories({
 		.leftJoin(space, eq(memoriesToSpaces.spaceId, space.id));
 
 	const totalQuery = db.select({ count: sql<number>`count(*)` }).from(memory);
-	
-	if (spaceIds.length > 0) {
+
+	if (apiKeyId || effectiveSpaceIds.length > 0) {
 		const subquery = db
 			.select({ memoryId: memoriesToSpaces.memoryId })
 			.from(memoriesToSpaces)
-			.where(inArray(memoriesToSpaces.spaceId, spaceIds));
+			.where(inArray(memoriesToSpaces.spaceId, effectiveSpaceIds));
 		query.where(inArray(memory.id, subquery));
 		totalQuery.where(inArray(memory.id, subquery));
-	} else if (userId && !isAdmin) {
+	} else if (userId && !isAdmin && !apiKeyId) {
 		const userSpaces = db
 			.select({ spaceId: userSpace.spaceId })
 			.from(userSpace)
@@ -171,6 +196,7 @@ export type SearchMemoriesInput = {
 	spaceIds: string[];
 	userId?: string;
 	isAdmin?: boolean;
+	apiKeyId?: string;
 	limit?: number;
 	offset?: number;
 };
@@ -180,9 +206,32 @@ export async function searchMemories({
 	spaceIds,
 	userId,
 	isAdmin = false,
+	apiKeyId,
 	limit = 10,
 	offset = 0,
 }: SearchMemoriesInput) {
+	let effectiveSpaceIds = spaceIds;
+	if (apiKeyId) {
+		const allowedSpaces = await getAllowedSpacesForApiKey(apiKeyId);
+		
+		if (spaceIds.length > 0) {
+			effectiveSpaceIds = spaceIds.filter(spaceId => allowedSpaces.includes(spaceId));
+		} else {
+			effectiveSpaceIds = allowedSpaces;
+		}
+		
+		if (effectiveSpaceIds.length === 0) {
+			return {
+				results: [],
+				pagination: {
+					limit,
+					offset,
+					total: 0,
+				},
+			};
+		}
+	}
+
 	const queryEmbedding = await generateEmbedding(query);
 	const similarity = sql<number>`1 - (${cosineDistance(
 		memory.embedding,
@@ -190,13 +239,13 @@ export async function searchMemories({
 	)})`;
 
 	const conditions = [gt(similarity, 0.5)];
-	if (spaceIds.length > 0) {
+	if (apiKeyId || effectiveSpaceIds.length > 0) {
 		const subquery = db
 			.select({ memoryId: memoriesToSpaces.memoryId })
 			.from(memoriesToSpaces)
-			.where(inArray(memoriesToSpaces.spaceId, spaceIds));
+			.where(inArray(memoriesToSpaces.spaceId, effectiveSpaceIds));
 		conditions.push(inArray(memory.id, subquery));
-	} else if (userId && !isAdmin) {
+	} else if (userId && !isAdmin && !apiKeyId) {
 		const userSpaces = db
 			.select({ spaceId: userSpace.spaceId })
 			.from(userSpace)

@@ -1,7 +1,8 @@
 import crypto from "node:crypto";
-import { and, desc, eq, lt, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { space, user, userSpace } from "@/db/schema";
+import { getAllowedSpacesForApiKey } from "@/lib/api-key-space-access";
 import {
 	type CursorPaginatedResponse,
 	type CursorPaginationOptions,
@@ -113,7 +114,30 @@ export async function getSpaceWithAccess({
 	};
 }
 
-export async function listSpacesForUser(userId: string, isAdmin = false) {
+export async function listSpacesForUser(userId: string, isAdmin = false, apiKeyId?: string) {
+	if (apiKeyId) {
+		const allowedSpaceIds = await getAllowedSpacesForApiKey(apiKeyId);
+		
+		if (allowedSpaceIds.length === 0) {
+			return [];
+		}
+
+		const rows = await db
+			.select()
+			.from(space)
+			.where(inArray(space.id, allowedSpaceIds))
+			.orderBy(space.createdAt);
+
+		return rows.map((s) => ({
+			id: s.id,
+			name: s.name,
+			description: s.description,
+			createdAt: s.createdAt,
+			updatedAt: s.updatedAt,
+			createdBy: s.createdBy,
+		}));
+	}
+
 	if (isAdmin) {
 		const rows = await db.select().from(space).orderBy(space.createdAt);
 

@@ -60,6 +60,8 @@ export async function handleCreateMemory(c: Context) {
 		return c.json({ error: "Invalid input", details: parse.error.errors }, 400);
 	}
 
+	const apiKey = c.get("apiKey");
+
 	for (const spaceId of parse.data.spaceIds) {
 		const hasAccess = await checkSpaceAccess(c, spaceId);
 		if (!hasAccess) {
@@ -72,6 +74,7 @@ export async function handleCreateMemory(c: Context) {
 		spaceIds: parse.data.spaceIds,
 		metadata: parse.data.metadata,
 		userId,
+		apiKeyId: apiKey?.id,
 	});
 	return c.json(memory, 201);
 }
@@ -85,9 +88,9 @@ export async function handleGetMemory(c: Context) {
 	}
 
 	const user = c.get("user");
+	const apiKey = c.get("apiKey");
 	
 	if (user && user.role === "admin") {
-		const apiKey = c.get("apiKey");
 		if (apiKey) {
 			await addAccessLogJob({ memoryId, apiKeyId: apiKey.id });
 		}
@@ -107,7 +110,6 @@ export async function handleGetMemory(c: Context) {
 		}
 	}
 
-	const apiKey = c.get("apiKey");
 	if (apiKey) {
 		await addAccessLogJob({ memoryId, apiKeyId: apiKey.id });
 	}
@@ -132,6 +134,7 @@ export async function handleListMemories(c: Context) {
 	}
 
 	const user = c.get("user");
+	const apiKey = c.get("apiKey");
 	
 	if (!(user && user.role === "admin")) {
 		for (const spaceId of parse.data.spaceId) {
@@ -146,11 +149,12 @@ export async function handleListMemories(c: Context) {
 		spaceIds: parse.data.spaceId,
 		userId,
 		isAdmin: user?.role === "admin",
+		apiKeyId: apiKey?.id,
 		limit: parse.data.limit,
 		offset: parse.data.offset,
 		sortOrder: parse.data.sortOrder,
 	});
-	const apiKey = c.get("apiKey");
+	
 	if (apiKey && result.memories) {
 		await addAccessLogJobs(
 			result.memories.map((memory) => ({
@@ -172,6 +176,7 @@ export async function handleSearchMemories(c: Context) {
 	const spaceIds = parse.data.spaceId;
 	const userId = getUserId(c);
 	const user = c.get("user");
+	const apiKey = c.get("apiKey");
 
 	if (!(user && user.role === "admin")) {
 		for (const spaceId of spaceIds) {
@@ -187,10 +192,11 @@ export async function handleSearchMemories(c: Context) {
 		spaceIds,
 		userId,
 		isAdmin: user?.role === "admin",
+		apiKeyId: apiKey?.id,
 		limit: parse.data.limit,
 		offset: parse.data.offset,
 	});
-	const apiKey = c.get("apiKey");
+	
 	if (apiKey && result) {
 		await addAccessLogJobs(
 			result.results.map((memory) => ({
