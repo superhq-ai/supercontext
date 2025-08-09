@@ -38,20 +38,24 @@ const server = new FastMCP({
 	authenticate: async (request) => {
 		const authHeader = request.headers.authorization;
 		const bearerToken = Array.isArray(authHeader) ? authHeader[0] : authHeader;
-		
+
 		if (bearerToken?.startsWith("Bearer ")) {
 			const apiKey = bearerToken.replace("Bearer ", "");
 			return { apiKey };
 		}
 
 		const apiKeyHeader = request.headers["x-api-key"];
-		const headerApiKey = Array.isArray(apiKeyHeader) ? apiKeyHeader[0] : apiKeyHeader;
-		
+		const headerApiKey = Array.isArray(apiKeyHeader)
+			? apiKeyHeader[0]
+			: apiKeyHeader;
+
 		if (headerApiKey) {
 			return { apiKey: headerApiKey };
 		}
 
-		throw new Error("Authentication required: provide either Bearer token or x-api-key header");
+		throw new Error(
+			"Authentication required: provide either Bearer token or x-api-key header",
+		);
 	},
 });
 
@@ -158,6 +162,83 @@ server.addTool({
 			path: "/spaces",
 			method: "GET",
 			apiKey: session.apiKey,
+		});
+	},
+});
+
+server.addTool({
+	name: "query_llms_txt",
+	description:
+		"Answer questions based on the llms.txt file from a website and optionally create memories from the content. This tool fetches the llms.txt file from the specified website, uses its content to answer your question, and can automatically store key information as memories for future reference.",
+	parameters: z.object({
+		website: z
+			.string()
+			.describe(
+				"The website URL (e.g., 'https://example.com' or 'example.com'). The tool will automatically append '/llms.txt' to fetch the file.",
+			),
+		question: z
+			.string()
+			.describe(
+				"The question you want to answer based on the llms.txt content. Be specific about what information you're looking for.",
+			),
+		createMemories: z
+			.boolean()
+			.optional()
+			.default(true)
+			.describe(
+				"Whether to automatically create memories from the llms.txt content. When true, key information will be stored as searchable memories.",
+			),
+		spaceIds: z
+			.array(z.string())
+			.optional()
+			.describe(
+				"Space IDs to store the memories in. Use list_spaces to see available spaces. If not provided, memories will be stored in the default space.",
+			),
+	}),
+	execute: async (
+		{ website, question, createMemories = true, spaceIds },
+		{ session },
+	) => {
+		if (!session?.apiKey) throw new Error("API key is missing");
+		return callApi({
+			path: "/llms-txt/query",
+			method: "POST",
+			apiKey: session.apiKey,
+			body: { website, question, createMemories, spaceIds: spaceIds || [] },
+		});
+	},
+});
+
+server.addTool({
+	name: "fetch_and_store_llms_txt",
+	description:
+		"Fetch a website's llms.txt file and automatically create structured memories from its content. This tool is useful for proactively gathering and storing information about websites, tools, or services for future reference without needing a specific question.",
+	parameters: z.object({
+		website: z
+			.string()
+			.describe(
+				"The website URL (e.g., 'https://example.com' or 'example.com'). The tool will automatically append '/llms.txt' to fetch the file.",
+			),
+		spaceIds: z
+			.array(z.string())
+			.optional()
+			.describe(
+				"Space IDs to store the memories in. Use list_spaces to see available spaces. If not provided, memories will be stored in the default space.",
+			),
+		customTags: z
+			.array(z.string())
+			.optional()
+			.describe(
+				"Additional tags to help categorize this content (e.g., ['documentation', 'api', 'tool']). These will be added to the metadata.",
+			),
+	}),
+	execute: async ({ website, spaceIds, customTags }, { session }) => {
+		if (!session?.apiKey) throw new Error("API key is missing");
+		return callApi({
+			path: "/llms-txt/fetch-and-store",
+			method: "POST",
+			apiKey: session.apiKey,
+			body: { website, spaceIds: spaceIds || [], customTags: customTags || [] },
 		});
 	},
 });
