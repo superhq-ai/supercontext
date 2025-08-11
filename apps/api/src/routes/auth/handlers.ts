@@ -4,8 +4,10 @@ import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
-import { env } from "@/env";
-import { checkInviteTokenValidator, validateTokenValidator } from "./validators";
+import {
+	checkInviteTokenValidator,
+	validateTokenValidator,
+} from "./validators";
 
 export async function handleCheckInviteToken(c: Context) {
 	const body = await c.req.json();
@@ -69,18 +71,18 @@ export async function handleValidateToken(c: Context) {
 		.select()
 		.from(schema.apiKey)
 		.where(
-			and(
-				eq(schema.apiKey.key, hashedKey),
-				eq(schema.apiKey.status, "active")
-			)
+			and(eq(schema.apiKey.key, hashedKey), eq(schema.apiKey.status, "active")),
 		)
 		.limit(1);
 
 	if (!keyRecord) {
-		return c.json({
-			valid: false,
-			error: "Invalid API token"
-		}, 401);
+		return c.json(
+			{
+				valid: false,
+				error: "Invalid API token",
+			},
+			401,
+		);
 	}
 
 	await db
@@ -90,6 +92,5 @@ export async function handleValidateToken(c: Context) {
 
 	return c.json({
 		valid: true,
-		mobileNumber: env.VALIDATE_PHONE_NUMBER
 	});
 }

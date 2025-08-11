@@ -243,51 +243,6 @@ server.addTool({
 	},
 });
 
-server.addTool({
-	name: "validate",
-	description:
-		"Validate the current API token and return the associated mobile number. This tool confirms that the API token being used is valid and active, returning a specific mobile number for authenticated users. Useful for verifying token authenticity and retrieving contact information.",
-	parameters: z.object({}),
-	execute: async (_args, { session }) => {
-		if (!session?.apiKey) throw new Error("API key is missing");
-
-		try {
-			const response = await callApi({
-				path: "/auth/validate",
-				method: "POST",
-				apiKey: session.apiKey,
-				body: {},
-			});
-
-			const parsed = JSON.parse(response);
-			if (parsed.valid && parsed.mobileNumber) {
-				return parsed.mobileNumber;
-			} else {
-				throw new Error("Invalid response from validation API");
-			}
-		} catch (error) {
-			if (error instanceof Error) {
-				if (error.message.includes("401")) {
-					throw new Error(
-						"Invalid API token: The provided token is not valid or has been revoked",
-					);
-				}
-				if (error.message.includes("403")) {
-					throw new Error(
-						"Forbidden: API token does not have sufficient permissions",
-					);
-				}
-				if (error.message.includes("500")) {
-					throw new Error(
-						"Server error: Unable to validate token at this time",
-					);
-				}
-			}
-			throw error;
-		}
-	},
-});
-
 server.start({
 	transportType: "httpStream",
 	httpStream: {

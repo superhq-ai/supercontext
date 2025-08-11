@@ -11,7 +11,6 @@ const envSchema = z.object({
 	OPENAI_API_KEY: z.string().optional(),
 	GEMINI_API_KEY: z.string().optional(),
 	REDIS_URL: z.string().url(),
-	VALIDATE_PHONE_NUMBER: z.string(),
 });
 
 export const env = envSchema.parse(process.env);
