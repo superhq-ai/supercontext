@@ -28,10 +28,22 @@ app.use("*", async (c, next) => {
 app.use(
 	"*",
 	cors({
-		origin: env.SUPERCONTEXT_CLIENT_URL,
-		allowHeaders: ["Content-Type", "Authorization"],
-		allowMethods: ["POST", "GET", "DELETE", "PATCH", "OPTIONS"],
-		exposeHeaders: ["Content-Length"],
+		origin: ["http://localhost:3000", env.SUPERCONTEXT_CLIENT_URL || ""],
+		allowHeaders: [
+			"Content-Type", 
+			"Authorization", 
+			"Accept", 
+			"Origin", 
+			"User-Agent",
+			"DNT",
+			"Cache-Control",
+			"X-Mx-ReqToken",
+			"Keep-Alive",
+			"X-Requested-With",
+			"If-Modified-Since"
+		],
+		allowMethods: ["POST", "GET", "DELETE", "PATCH", "OPTIONS", "PUT"],
+		exposeHeaders: ["*"],
 		maxAge: 600,
 		credentials: true,
 	}),
